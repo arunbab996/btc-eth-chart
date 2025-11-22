@@ -4,45 +4,111 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Live BTC & ETH Tick Chart (Binance WebSocket)</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
   <style>
-    :root{font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
-    body{display:flex;align-items:flex-start;justify-content:center;min-height:100vh;margin:0;background:#f5f7fb;padding:24px}
-    .card{width:95%;max-width:1400px;background:white;padding:14px;border-radius:12px;box-shadow:0 6px 24px rgba(12,20,44,0.06)}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    h1{font-size:16px;margin:0}
+    :root{
+      --bg: #f5f7fb;
+      --card: #fff;
+      --muted: #6b7280;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      padding:28px;
+      color:#0b1220;
+    }
+    .card{
+      width:95%;
+      max-width:1300px;
+      margin:0 auto;
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow:0 8px 30px rgba(12,20,44,0.06);
+    }
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    h1{margin:0;font-size:16px}
     .controls{display:flex;gap:8px;align-items:center}
-    input,button{padding:6px 8px;border-radius:6px;border:1px solid #e6e9ef;background:white}
-    #chart{width:100%;height:520px}
-    .meta{font-size:13px;color:#556;margin-top:8px}
+    input,button,select{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:white}
+    #chart{width:100%;height:520px;display:block;margin-top:12px}
+    .meta{font-size:13px;color:var(--muted)}
+    #priceStatus{font-weight:600}
+    .top-left{display:flex;flex-direction:column;gap:6px}
+    .small{font-size:12px;color:var(--muted)}
+    .ref-img{max-width:220px;border-radius:6px;border:1px solid #eee;margin-left:8px}
+    footer{margin-top:12px;font-size:12px;color:var(--muted)}
+    @media (max-width:700px){
+      header{flex-direction:column;align-items:flex-start}
+      .controls{width:100%;justify-content:flex-end}
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <header>
-      <div>
-        <h1>Live Tick Chart — BTC/USDT & ETH/USDT (Binance WebSocket)</h1>
-        <div class="meta">Stream: btcusdt@trade & ethusdt@trade. Stepped price per tick + volume bars.</div>
+      <div class="top-left">
+        <div>
+          <h1>Live Tick Chart — BTC/USDT &amp; ETH/USDT (Binance WebSocket)</h1>
+          <div class="meta">Stream: <code>btcusdt@trade</code> &amp; <code>ethusdt@trade</code>. Stepped price per tick + per-tick volume bars.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+          <div id="priceStatus">BTC USDT: — &nbsp; | &nbsp; ETH USDT: —</div>
+          <div id="startedAt" class="small" style="margin-left:8px">Started at: —</div>
+        </div>
       </div>
+
       <div class="controls">
-        <label>Max ticks</label>
+        <label class="small">Max ticks</label>
         <input id="maxPoints" type="number" min="50" value="400" style="width:90px" />
+        <label class="small" style="margin-left:6px">REST fallback</label>
+        <select id="fallbackInterval" title="REST fallback interval (seconds)">
+          <option value="2">2s</option>
+          <option value="5" selected>5s</option>
+          <option value="10">10s</option>
+        </select>
         <button id="apply">Apply</button>
       </div>
     </header>
 
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div id="priceStatus">BTC USDT: — &nbsp;&nbsp; | &nbsp;&nbsp; ETH USDT: —</div>
-      <div class="meta">Source: Binance WebSocket</div>
+    <!-- optional reference image (uses uploaded file path) -->
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-top:12px">
+      <canvas id="chart"></canvas>
+      <div style="flex:0 0 240px;">
+        <div class="meta">Reference (your screenshot):</div>
+        <!-- developer note: this uses the uploaded file path; the hosting system will map it to a URL -->
+        <img src="/mnt/data/Screenshot 2025-11-22 at 3.24.00 PM.png" alt="reference" class="ref-img" />
+        <div style="height:10px"></div>
+        <div class="meta">Source: Binance WebSocket</div>
+        <div style="height:8px"></div>
+        <div id="last" class="small">Last update: —</div>
+      </div>
     </div>
 
-    <canvas id="chart"></canvas>
-    <p class="meta" id="last">Last update: —</p>
+    <footer class="small">
+      Notes: If your custom domain is proxied (Cloudflare orange cloud) WebSocket upgrades may fail — use DNS-only (grey cloud) or the Vercel preview domain while testing.
+    </footer>
   </div>
 
 <script>
-// Real-time tick chart using Binance WebSocket
-let MAX_POINTS = Number(document.getElementById('maxPoints').value) || 400;
+/*
+  Full single-file tick chart:
+  - Uses Binance combined stream (no :9443 port) for BTC & ETH trades.
+  - Starts empty at page load and only accepts ticks with timestamp >= page load time.
+  - Uses Chart.js v4; dataset types are explicitly set to avoid "undefined controller" errors.
+  - Falls back to REST polling if WebSocket fails.
+*/
+
+// ---------- config / globals ----------
+let MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400);
+let REST_INTERVAL_SEC = Number(document.getElementById('fallbackInterval').value) || 5;
+
+let startTime = Date.now();   // epoch ms when page loaded (chart will start from this instant)
+let started = false;
+
 const labels = [];
 const btcPrices = [];
 const ethPrices = [];
@@ -50,55 +116,62 @@ const btcVolumes = [];
 const ethVolumes = [];
 
 const ctx = document.getElementById('chart').getContext('2d');
+
+// ---------- Chart.js setup (explicit types for v4) ----------
 const chart = new Chart(ctx, {
   data: {
     labels: labels,
     datasets: [
-  {
-    type: 'line',
-    label: 'BTC Price (USDT)',
-    data: btcPrices,
-    borderColor: '#1aa39b',
-    backgroundColor: '#1aa39b',
-    borderWidth: 2,
-    pointRadius: 2,
-    stepped: true,
-    yAxisID: 'price',
-  },
-  {
-    type: 'line',
-    label: 'ETH Price (USDT)',
-    data: ethPrices,
-    borderColor: '#2f7ed8',
-    backgroundColor: '#2f7ed8',
-    borderWidth: 2,
-    pointRadius: 2,
-    stepped: true,
-    yAxisID: 'price',
-  },
-  {
-    type: 'bar',
-    label: 'BTC Volume',
-    data: btcVolumes,
-    backgroundColor: 'rgba(255,99,132,0.22)',
-    yAxisID: 'volume',
-  },
-  {
-    type: 'bar',
-    label: 'ETH Volume',
-    data: ethVolumes,
-    backgroundColor: 'rgba(255,159,64,0.18)',
-    yAxisID: 'volume',
-  }
-]
-
+      {
+        type: 'line',
+        label: 'BTC Price (USDT)',
+        data: btcPrices,
+        borderColor: '#18b6b6',
+        backgroundColor: '#18b6b6',
+        borderWidth: 2,
+        pointRadius: 3,
+        stepped: true,
+        yAxisID: 'price',
+        tension: 0.05,
+      },
+      {
+        type: 'line',
+        label: 'ETH Price (USDT)',
+        data: ethPrices,
+        borderColor: '#2f7ed8',
+        backgroundColor: '#2f7ed8',
+        borderWidth: 2,
+        pointRadius: 3,
+        stepped: true,
+        yAxisID: 'price',
+        tension: 0.05,
+      },
+      {
+        type: 'bar',
+        label: 'BTC Qty',
+        data: btcVolumes,
+        backgroundColor: 'rgba(255,99,132,0.22)',
+        yAxisID: 'volume',
+      },
+      {
+        type: 'bar',
+        label: 'ETH Qty',
+        data: ethVolumes,
+        backgroundColor: 'rgba(255,159,64,0.18)',
+        yAxisID: 'volume',
+      }
+    ]
   },
   options: {
     animation: false,
+    maintainAspectRatio: false,
     responsive: true,
     interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top' } },
     scales: {
-      x: { ticks: { maxRotation: 90, autoSkip: true, maxTicksLimit: 20 } },
+      x: {
+        ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 30 },
+      },
       price: {
         type: 'linear',
         position: 'left',
@@ -108,59 +181,171 @@ const chart = new Chart(ctx, {
       volume: {
         type: 'linear',
         position: 'right',
-        title: { display: true, text: 'Volume' },
+        title: { display: true, text: 'Quantity' },
         grid: { drawOnChartArea: false }
       }
     }
   }
 });
 
-function pushPoint(time, btcP, ethP, btcQ, ethQ){
-  labels.push(time);
+// ---------- helpers ----------
+function pushPoint(label, btcP, ethP, btcQ, ethQ){
+  labels.push(label);
   btcPrices.push(btcP ?? null);
   ethPrices.push(ethP ?? null);
   btcVolumes.push(btcQ ?? 0);
   ethVolumes.push(ethQ ?? 0);
 
   while(labels.length > MAX_POINTS){
-    labels.shift(); btcPrices.shift(); ethPrices.shift();
-    btcVolumes.shift(); ethVolumes.shift();
+    labels.shift(); btcPrices.shift(); ethPrices.shift(); btcVolumes.shift(); ethVolumes.shift();
   }
 }
 
 function updateUI(b, e){
   document.getElementById('priceStatus').textContent =
-    `BTC USDT: ${b ? b.toLocaleString() : '—'} | ETH USDT: ${e ? e.toLocaleString() : '—'}`;
+    `BTC USDT: ${b ? Number(b).toLocaleString() : '—'}  |  ETH USDT: ${e ? Number(e).toLocaleString() : '—'}`;
   document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`;
 }
 
-const socket = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@trade/ethusdt@trade');
+// ---------- WebSocket + fallback ----------
+
+let socket = null;
+let restTimer = null;
 let lastBTC = null, lastETH = null;
 
-socket.onmessage = (evt) => {
-  const payload = JSON.parse(evt.data);
-  const stream = payload.stream;
-  const d = payload.data;
-  const price = parseFloat(d.p);
-  const qty = parseFloat(d.q);
-  const time = new Date(d.T).toLocaleTimeString();
+function startWebSocket() {
+  // reset start time and data on (re)connect so chart starts fresh from page-load moment
+  startTime = Date.now();
+  started = false;
+  labels.length = 0; btcPrices.length = 0; ethPrices.length = 0; btcVolumes.length = 0; ethVolumes.length = 0;
+  chart.update();
 
-  if(stream.startsWith('btcusdt')){
-    pushPoint(time, price, null, qty, 0);
-    lastBTC = price;
-  } else {
-    pushPoint(time, null, price, 0, qty);
-    lastETH = price;
+  // use portless combined stream (often more reliable across hosts)
+  const url = 'wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade';
+  try {
+    socket = new WebSocket(url);
+
+    socket.onopen = () => {
+      console.log('WebSocket open:', url);
+      started = true;
+      document.getElementById('startedAt').textContent = 'Started at: ' + new Date(startTime).toLocaleTimeString();
+      document.getElementById('last').textContent = 'Last update: connected (websocket)';
+      // stop any REST fallback if running
+      stopRestFallback();
+    };
+
+    socket.onmessage = (evt) => {
+      try {
+        const payload = JSON.parse(evt.data);
+        const stream = payload.stream;
+        const d = payload.data;
+        const tradeTs = d.T; // epoch ms
+        if (tradeTs < startTime) return; // ignore older trades
+
+        // label: elapsed seconds since page load (high resolution)
+        const elapsedSec = ((tradeTs - startTime) / 1000).toFixed(2);
+        const label = `+${elapsedSec}s`;
+
+        const price = parseFloat(d.p);
+        const qty = parseFloat(d.q);
+
+        if (stream && stream.startsWith('btcusdt')) {
+          pushPoint(label, price, null, qty, 0);
+          lastBTC = price;
+        } else if (stream && stream.startsWith('ethusdt')) {
+          pushPoint(label, null, price, 0, qty);
+          lastETH = price;
+        } else {
+          console.warn('Unknown stream payload', payload);
+        }
+
+        // update chart without animation
+        chart.update('none');
+        updateUI(lastBTC, lastETH);
+      } catch (err) {
+        console.error('onmessage parse error', err);
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error('WebSocket error', err);
+      document.getElementById('last').textContent = 'Last update: websocket error — falling back to REST';
+      startRestFallback();
+    };
+
+    socket.onclose = (ev) => {
+      console.warn('WebSocket closed', ev);
+      if (!ev.wasClean) startRestFallback();
+    };
+  } catch (e) {
+    console.error('WebSocket start failed', e);
+    startRestFallback();
   }
+}
 
-  chart.update('none');
-  updateUI(lastBTC, lastETH);
-};
+// ---------- REST fallback (poll latest trades periodically) ----------
+function startRestFallback() {
+  if (restTimer) return;
+  // choose interval
+  REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5);
+  restTimer = setInterval(async () => {
+    try {
+      // fetch last trade for each symbol (limit=1)
+      const [btcResp, ethResp] = await Promise.all([
+        fetch('https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1'),
+        fetch('https://api.binance.com/api/v3/trades?symbol=ETHUSDT&limit=1')
+      ]);
+      const btcArr = await btcResp.json();
+      const ethArr = await ethResp.json();
 
-document.getElementById('apply').addEventListener('click', ()=>{
-  MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value));
+      if (Array.isArray(btcArr) && btcArr.length) {
+        const t = btcArr[0].time; // epoch ms
+        if (t >= startTime) {
+          const label = `+${((t - startTime)/1000).toFixed(2)}s`;
+          pushPoint(label, parseFloat(btcArr[0].price), null, parseFloat(btcArr[0].qty), 0);
+          lastBTC = parseFloat(btcArr[0].price);
+        }
+      }
+      if (Array.isArray(ethArr) && ethArr.length) {
+        const t2 = ethArr[0].time;
+        if (t2 >= startTime) {
+          const label = `+${((t2 - startTime)/1000).toFixed(2)}s`;
+          pushPoint(label, null, parseFloat(ethArr[0].price), 0, parseFloat(ethArr[0].qty));
+          lastETH = parseFloat(ethArr[0].price);
+        }
+      }
+
+      chart.update('none');
+      updateUI(lastBTC, lastETH);
+    } catch (err) {
+      console.error('REST fallback error', err);
+    }
+  }, REST_INTERVAL_SEC * 1000);
+
+  document.getElementById('last').textContent = 'Last update: using REST fallback';
+}
+
+function stopRestFallback(){
+  if (restTimer){ clearInterval(restTimer); restTimer = null; }
+}
+
+// ---------- controls ----------
+document.getElementById('apply').addEventListener('click', ()=> {
+  MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400);
+  REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5);
+  // clear current data so session starts fresh with new MAX_POINTS
+  labels.length = 0; btcPrices.length = 0; ethPrices.length = 0; btcVolumes.length = 0; ethVolumes.length = 0;
+  chart.update();
+});
+
+// ---------- start ----------
+startWebSocket();
+
+// cleanup on unload
+window.addEventListener('beforeunload', ()=> {
+  try { if (socket) socket.close(); } catch(e){}
+  stopRestFallback();
 });
 </script>
-
 </body>
 </html>
