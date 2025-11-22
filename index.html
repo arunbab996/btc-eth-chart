@@ -54,41 +54,44 @@ const chart = new Chart(ctx, {
   data: {
     labels: labels,
     datasets: [
-      {
-        label: 'BTC Price (USDT)',
-        data: btcPrices,
-        borderColor: '#1aa39b',
-        backgroundColor: '#1aa39b',
-        borderWidth: 2,
-        pointRadius: 2,
-        stepped: true,
-        yAxisID: 'price',
-      },
-      {
-        label: 'ETH Price (USDT)',
-        data: ethPrices,
-        borderColor: '#2f7ed8',
-        backgroundColor: '#2f7ed8',
-        borderWidth: 2,
-        pointRadius: 2,
-        stepped: true,
-        yAxisID: 'price',
-      },
-      {
-        type: 'bar',
-        label: 'BTC Volume',
-        data: btcVolumes,
-        backgroundColor: 'rgba(255,99,132,0.22)',
-        yAxisID: 'volume',
-      },
-      {
-        type: 'bar',
-        label: 'ETH Volume',
-        data: ethVolumes,
-        backgroundColor: 'rgba(255,159,64,0.18)',
-        yAxisID: 'volume',
-      }
-    ]
+  {
+    type: 'line',
+    label: 'BTC Price (USDT)',
+    data: btcPrices,
+    borderColor: '#1aa39b',
+    backgroundColor: '#1aa39b',
+    borderWidth: 2,
+    pointRadius: 2,
+    stepped: true,
+    yAxisID: 'price',
+  },
+  {
+    type: 'line',
+    label: 'ETH Price (USDT)',
+    data: ethPrices,
+    borderColor: '#2f7ed8',
+    backgroundColor: '#2f7ed8',
+    borderWidth: 2,
+    pointRadius: 2,
+    stepped: true,
+    yAxisID: 'price',
+  },
+  {
+    type: 'bar',
+    label: 'BTC Volume',
+    data: btcVolumes,
+    backgroundColor: 'rgba(255,99,132,0.22)',
+    yAxisID: 'volume',
+  },
+  {
+    type: 'bar',
+    label: 'ETH Volume',
+    data: ethVolumes,
+    backgroundColor: 'rgba(255,159,64,0.18)',
+    yAxisID: 'volume',
+  }
+]
+
   },
   options: {
     animation: false,
