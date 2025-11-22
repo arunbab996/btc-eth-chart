@@ -1,130 +1,94 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Magic Internet Money</title>
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <style>
-    :root {--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8;--warn:#ffcc00}
-    html,body {height:100%;margin:0;overflow:hidden}
-    body {background:var(--bg);font-family:Inter,system-ui;display:flex;justify-content:center;align-items:center;padding:10px}
-    .card {width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,.06);display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 20px);}
-    header {display:flex;justify-content:space-between;align-items:center}
-    .header-controls{display:flex;gap:8px;align-items:center}
-    select,input,button{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:#fff}
-    .main{display:flex;gap:12px;flex:1;min-height:0}
-    .right{width:200px;display:flex;flex-direction:column;gap:10px}
-    .price-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(12,20,44,.06);cursor:pointer;transition:opacity .2s,transform .2s}
-    .price-card.active{transform:translateY(-4px);border:1px solid rgba(0,0,0,.06)}
-    .price-card:not(.active){opacity:0.6}
-    canvas{width:100%!important;height:100%!important}
-    .badge{padding:6px 10px;border-radius:999px;background:var(--warn);font-size:12px;font-weight:600}
-    .hidden{display:none}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Magic Internet Money</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8;--warn:#ffcc00}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);font-family:Inter,system-ui;display:flex;justify-content:center;align-items:center;padding:10px}
+.card{width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,.06);display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 20px)}
+header{display:flex;justify-content:space-between;align-items:center}
+.header-controls{display:flex;gap:8px;align-items:center}
+select,input,button{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:#fff}
+.main{display:flex;gap:12px;flex:1;min-height:0}
+.right{width:200px;display:flex;flex-direction:column;gap:10px}
+.price-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(12,20,44,.06);cursor:pointer;transition:opacity .2s,transform .2s}
+.price-card.active{transform:translateY(-4px);border:1px solid rgba(0,0,0,.06)}
+.price-card:not(.active){opacity:0.6}
+canvas{width:100%!important;height:100%!important}
+.badge{padding:6px 10px;border-radius:999px;background:var(--warn);font-size:12px;font-weight:600}
+.hidden{display:none}
+</style>
 </head>
 <body>
-  <div class="card">
-    <header>
-      <div>
-        <h1 style="margin:0;font-size:15px">Live Tick Chart — BTC / ETH</h1>
-        <div style="font-size:13px;color:var(--muted)">Click a coin to switch the chart.</div>
-      </div>
-      <div class="header-controls">
-        <div id="convBadge" class="badge hidden">Conversion: unavailable</div>
-        <label style="font-size:12px;color:var(--muted)">Currency</label>
-        <select id="currencySelector">
-          <option value="USDT">USDT</option>
-          <option value="USD">USD</option>
-          <option value="INR">INR</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-          <option value="JPY">JPY</option>
-          <option value="AUD">AUD</option>
-          <option value="SGD">SGD</option>
-        </select>
-      </div>
-    </header>
-
-    <div class="main">
-      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <div id="priceStatus">BTC USDT: —</div>
-        </div>
-        <div style="flex:1;min-height:0"><canvas id="chart"></canvas></div>
-      </div>
-
-      <div class="right">
-        <div id="btcPanel" class="price-card active">
-          <div style="font-size:12px;color:var(--muted)">BTC</div>
-          <div id="btcLive" style="font-size:20px;font-weight:700">—</div>
-        </div>
-        <div id="ethPanel" class="price-card">
-          <div style="font-size:12px;color:var(--muted)">ETH</div>
-          <div id="ethLive" style="font-size:20px;font-weight:700">—</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+<div class="card">
+<header>
+<div>
+<h1 style="margin:0;font-size:15px">Live Tick Chart — BTC / ETH</h1>
+<div style="font-size:13px;color:var(--muted)">Click a coin to switch the chart.</div>
+</div>
+<div class="header-controls">
+<div id="convBadge" class="badge hidden">Conversion: unavailable</div>
+<label style="font-size:12px;color:var(--muted)">Currency</label>
+<select id="currencySelector">
+<option value="USDT">USDT</option>
+<option value="USD">USD</option>
+<option value="INR">INR</option>
+<option value="EUR">EUR</option>
+<option value="GBP">GBP</option>
+<option value="JPY">JPY</option>
+<option value="AUD">AUD</option>
+<option value="SGD">SGD</option>
+</select>
+</div>
+</header>
+<div class="main">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+<div style="display:flex;justify-content:space-between;margin-bottom:6px">
+<div id="priceStatus">BTC USDT: —</div>
+</div>
+<div style="flex:1;min-height:0"><canvas id="chart"></canvas></div>
+</div>
+<div class="right">
+<div id="btcPanel" class="price-card active">
+<div style="font-size:12px;color:var(--muted)">BTC</div>
+<div id="btcLive" style="font-size:20px;font-weight:700">—</div>
+</div>
+<div id="ethPanel" class="price-card">
+<div style="font-size:12px;color:var(--muted)">ETH</div>
+<div id="ethLive" style="font-size:20px;font-weight:700">—</div>
+</div>
+</div>
+</div>
+</div>
 <script>
-let activeSymbol = 'BTC';
-let lastBTC=null,lastETH=null; let prevBTC=null,prevETH=null;
+let activeSymbol='BTC';
+let lastBTC=null,lastETH=null;let prevBTC=null,prevETH=null;
 let btcLabels=[],btcPrices=[],ethLabels=[],ethPrices=[];
-let currencyRate=1,currencySymbol='USDT'; let cachedRates=null;
+let currencyRate=1,currencySymbol='USDT';let cachedRates=null;
 const convBadge=document.getElementById('convBadge');
-
 const ctx=document.getElementById('chart').getContext('2d');
 const chart=new Chart(ctx,{type:'line',data:{labels:btcLabels,datasets:[{label:'Price',data:btcPrices,borderColor:'#f7931a',borderWidth:2,pointRadius:0}]},options:{animation:false,maintainAspectRatio:false,responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
 
-async function fetchRates(){
-  try{
-    const r=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY,AUD,SGD');
-    const j=await r.json(); return j.rates;
-  }catch(e){return null;}
-}
+async function fetchRates(){try{const r=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY,AUD,SGD');const j=await r.json();return j.rates;}catch(e){return null;}}
+async function applyCurrency(c){currencySymbol=c;if(c==='USD'||c==='USDT'){currencyRate=1;convBadge.classList.add('hidden');}else{if(!cachedRates)cachedRates=await fetchRates();if(cachedRates&&cachedRates[c]){currencyRate=cachedRates[c];convBadge.classList.add('hidden');}else{currencyRate=1;convBadge.classList.remove('hidden');}}updateView();}
 
-async function applyCurrency(c){
-  currencySymbol=c;
-  if(c==='USD'||c==='USDT'){currencyRate=1;convBadge.classList.add('hidden');}
-  else{
-    if(!cachedRates){cachedRates=await fetchRates();}
-    if(cachedRates&&cachedRates[c]){currencyRate=cachedRates[c];convBadge.classList.add('hidden');}
-    else{currencyRate=1;convBadge.classList.remove('hidden');}
-  }
-  updateView();
-}
+function updateView(){const arr=(activeSymbol==='BTC'?btcPrices:ethPrices).map(x=>x*currencyRate);chart.data.datasets[0].data=arr;chart.data.labels=activeSymbol==='BTC'?btcLabels:ethLabels;chart.update('none');document.getElementById('priceStatus').textContent=`${activeSymbol} ${currencySymbol}: ${arr[arr.length-1]?.toLocaleString()||'—'}`;document.getElementById('btcLive').textContent=lastBTC?(lastBTC*currencyRate).toLocaleString():'—';document.getElementById('ethLive').textContent=lastETH?(lastETH*currencyRate).toLocaleString():'—';}
 
-function updateView(){
-  const arr=(activeSymbol==='BTC'?btcPrices:ethPrices).map(x=>x*currencyRate);
-  chart.data.datasets[0].data=arr;
-  chart.data.labels=activeSymbol==='BTC'?btcLabels:ethLabels;
-  chart.update();
-  document.getElementById('priceStatus').textContent=`${activeSymbol} ${currencySymbol}: ${arr[arr.length-1]?.toLocaleString()||'—'}`;
-  document.getElementById('btcLive').textContent=lastBTC?(lastBTC*currencyRate).toLocaleString():'—';
-  document.getElementById('ethLive').textContent=lastETH?(lastETH*currencyRate).toLocaleString():'—';
-}
-
-function push(symbol,price){
-  if(symbol==='BTC'){btcLabels.push('');btcPrices.push(price);if(btcPrices.length>200)btcPrices.shift();}
-  else{ethLabels.push('');ethPrices.push(price);if(ethPrices.length>200)ethPrices.shift();}
-  if(symbol===activeSymbol) updateView();
-}
+function push(symbol,price){if(symbol==='BTC'){btcLabels.push('');btcPrices.push(price);if(btcPrices.length>200)btcPrices.shift();}else{ethLabels.push('');ethPrices.push(price);if(ethPrices.length>200)ethPrices.shift();}scheduleChartRedraw();}
 
 document.getElementById('currencySelector').addEventListener('change',e=>applyCurrency(e.target.value));
 document.getElementById('btcPanel').onclick=()=>{activeSymbol='BTC';document.getElementById('btcPanel').classList.add('active');document.getElementById('ethPanel').classList.remove('active');updateView();};
 document.getElementById('ethPanel').onclick=()=>{activeSymbol='ETH';document.getElementById('ethPanel').classList.add('active');document.getElementById('btcPanel').classList.remove('active');updateView();};
 
-// WebSocket
-const ws=new WebSocket('wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade');
-ws.onmessage=(m)=>{
-  const p=JSON.parse(m.data);
-  const s=p.stream.startsWith('btcusdt')?'BTC':'ETH';
-  const price=parseFloat(p.data.p);
-  if(s==='BTC'){prevBTC=lastBTC;lastBTC=price;} else{prevETH=lastETH;lastETH=price;}
-  push(s,price);
-};
-</script>
-</body>
-</html>
+// ---- batching / throttling ----
+const UPDATE_MS=220;let pendingChartUpdate=false;let lastUpdateTs=0;
+function scheduleChartRedraw(){if(pendingChartUpdate)return;pendingChartUpdate=true;const now=Date.now();const since=now-lastUpdateTs;const delay=Math.max(0,UPDATE_MS-since);setTimeout(()=>{if(activeSymbol==='BTC'){chart.data.labels=btcLabels;chart.data.datasets[0].data=btcPrices.map(x=>x*currencyRate);}else{chart.data.labels=ethLabels;chart.data.datasets[0].data=ethPrices.map(x=>x*currencyRate);}chart.update('none');document.getElementById('btcLive').textContent=lastBTC?(lastBTC*currencyRate).toLocaleString():'—';document.getElementById('ethLive').textContent=lastETH?(lastETH*currencyRate).toLocaleString():'—';lastUpdateTs=Date.now();pendingChartUpdate=false;},delay);}
+
+// ---- WebSocket with 1.5s timeout ----
+let restTimer=null;
+function startRestFallback(immediate=false){if(restTimer)return;async function doFetchOnce(){try{const [b,e]=await Promise.all([fetch('https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1'),fetch('https://api.binance.com/api/v3/trades?symbol=ETHUSDT&limit=1')]);const btcArr=await b.json();const ethArr=await e.json();if(btcArr.length){prevBTC=lastBTC;lastBTC=parseFloat(btcArr[0].price);push('BTC',lastBTC);}if(ethArr.length){prevETH=lastETH;last
