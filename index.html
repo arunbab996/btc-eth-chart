@@ -4,19 +4,42 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BTC Tick Chart — btc.heyabc.xyz</title>
-  <!-- Favicon: simple Bitcoin mark as inline SVG data URI -->
+
+  <!-- Favicon: Bitcoin mark (inline SVG) -->
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white' font-family='Arial, Helvetica, sans-serif'>฿</text></svg>">
 
   <!-- Chart.js v4 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280}
-    html,body{height:100%;}
-    body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial;padding:28px;color:#0b1220}
-    .wrap{display:flex;justify-content:center}
-    .card{width:95%;max-width:1200px;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 10px 30px rgba(12,20,44,0.06)}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    :root{
+      --bg:#f5f7fb;
+      --card:#fff;
+      --muted:#6b7280;
+      --accent:#f7931a;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial;
+      padding:28px;
+      color:#071122;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    .card{
+      width:95%;
+      max-width:1200px;
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(12,20,44,0.06);
+    }
+
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
     h1{margin:0;font-size:16px}
     .controls{display:flex;gap:8px;align-items:center}
     input,button,select{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:white}
@@ -25,51 +48,54 @@
     #priceStatus{font-weight:700}
     .small{font-size:12px;color:var(--muted)}
     footer{margin-top:12px;font-size:12px;color:var(--muted);text-align:center}
-    @media (max-width:700px){header{flex-direction:column;align-items:flex-start}}
+    .right-col { display:none; } /* removed right-hand boxes per request */
+    @media (max-width:1100px){ .right-col{display:none} }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <header>
-        <div>
-          <h1>Live Tick Chart — BTC/USDT (Binance WebSocket)</h1>
-          <div class="meta">Stream: <code>btcusdt@trade</code>. Starts from the exact moment the page loads.</div>
-        </div>
-        <div class="controls">
-          <label class="small">Max ticks</label>
-          <input id="maxPoints" type="number" min="50" value="400" style="width:90px" />
-          <label class="small">REST fallback</label>
-          <select id="fallbackInterval" title="REST fallback interval (seconds)">
-            <option value="2">2s</option>
-            <option value="5" selected>5s</option>
-            <option value="10">10s</option>
-          </select>
-          <button id="apply">Apply</button>
-        </div>
-      </header>
-
-      <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
-        <div id="priceStatus">BTC USDT: —</div>
-        <div id="startedAt" class="small">Started at: —</div>
+  <div class="card" role="main">
+    <header>
+      <div>
+        <h1>Live Tick Chart — BTC/USDT (Binance WebSocket)</h1>
+        <div class="meta">Stream: <code>btcusdt@trade</code>. Chart starts empty and builds from the moment the page loads.</div>
       </div>
 
-      <canvas id="chart"></canvas>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-        <div id="last" class="small">Last update: —</div>
-        <div class="small">Source: Binance WebSocket</div>
+      <div class="controls" aria-hidden="false">
+        <label class="small">Max ticks</label>
+        <input id="maxPoints" type="number" min="50" value="400" style="width:90px" />
+        <label class="small">REST fallback</label>
+        <select id="fallbackInterval" title="REST fallback interval (seconds)">
+          <option value="2">2s</option>
+          <option value="5" selected>5s</option>
+          <option value="10">10s</option>
+        </select>
+        <button id="apply">Apply</button>
       </div>
+    </header>
 
-      <footer>Tip: If your custom domain is behind Cloudflare, set the record to DNS-only (grey cloud) to allow WebSocket upgrades.</footer>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+      <div id="priceStatus">BTC USDT: —</div>
+      <div id="startedAt" class="small">Started at: —</div>
     </div>
+
+    <canvas id="chart" aria-label="Live BTC tick chart"></canvas>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div id="last" class="small">Last update: —</div>
+      <div class="small">Source: Binance WebSocket</div>
+    </div>
+
+    <footer>Tip: If your custom domain is behind Cloudflare, set the record to DNS-only (grey cloud) so WebSocket upgrades work.</footer>
   </div>
 
 <script>
-/* Single-file BTC-only tick chart with dynamic y-axis scaling and favicon.
-   - Uses Binance combined stream (btcusdt@trade only)
-   - Chart starts empty at page load; labels are elapsed seconds since load (e.g. +1.23s)
-   - Dynamic price axis adjusts to recent data to show visible moves
-   - If WS fails, falls back to REST polling for latest trades
+/*
+  BTC-only tick chart
+  - Uses Binance combined stream (btcusdt@trade)
+  - Chart starts empty at page load (ticks labeled as elapsed seconds)
+  - Improved dynamic Y-axis with smoothing (EMA) — replace the previous, jumpy algorithm
+  - Explicit dataset types for Chart.js v4
+  - Fallback to REST polling if WebSocket fails
 */
 
 // ---------- config / globals ----------
@@ -85,7 +111,7 @@ const btcVolumes = [];
 
 const ctx = document.getElementById('chart').getContext('2d');
 
-// ---------- Chart.js setup (BTC only, explicit types) ----------
+// ---------- Chart.js setup (BTC only) ----------
 const chart = new Chart(ctx, {
   data: {
     labels: labels,
@@ -94,7 +120,7 @@ const chart = new Chart(ctx, {
         type: 'line',
         label: 'BTC Price (USDT)',
         data: btcPrices,
-        borderColor: '#f7931a', // orange
+        borderColor: '#f7931a',
         backgroundColor: '#f7931a',
         borderWidth: 2,
         pointRadius: 3,
@@ -124,19 +150,70 @@ const chart = new Chart(ctx, {
         position: 'left',
         title: { display: true, text: 'Price (USDT)' },
         grid: { drawOnChartArea: true },
-        // initial range placeholders; will be adjusted dynamically
-        min: undefined,
-        max: undefined,
+        // min/max set dynamically
       },
       volume: {
         type: 'linear',
         position: 'right',
         title: { display: true, text: 'Quantity' },
-        grid: { drawOnChartArea: false },
+        grid: { drawOnChartArea: false }
       }
     }
   }
 });
+
+// ---------- improved dynamic axis with smoothing ----------
+let emaPriceMin = null;
+let emaPriceMax = null;
+
+/*
+  Explanation (brief):
+  - Use visible values to compute raw min/max.
+  - Ensure a sensible absolute minimum range so tiny moves become visible.
+  - Add padding proportional to the observed range (padPct).
+  - Smooth target min/max using EMA (emaAlpha) to avoid snapping every tick.
+  - Apply the smoothed min/max to chart.options.scales.price.
+*/
+function adjustPriceScale(){
+  const arr = btcPrices.filter(v => (v !== null && !isNaN(v)));
+  if (!arr.length) return;
+
+  // raw min / max from visible ticks
+  const rawMin = Math.min(...arr);
+  const rawMax = Math.max(...arr);
+
+  // minimal absolute range floor (relative to magnitude)
+  const minRangeAbsolute = Math.max(1, Math.abs(rawMax) * 0.0005); // 0.05% floor
+
+  let range = rawMax - rawMin;
+  if (range < minRangeAbsolute) range = minRangeAbsolute;
+
+  const padPct = 0.12; // 12% padding (tweak smaller for tighter view)
+  const pad = Math.max(range * padPct, minRangeAbsolute);
+
+  const targetMin = Math.max(0, rawMin - pad);
+  const targetMax = rawMax + pad;
+
+  // EMA smoothing
+  const emaAlpha = 0.12;
+  if (emaPriceMin === null || emaPriceMax === null){
+    emaPriceMin = targetMin;
+    emaPriceMax = targetMax;
+  } else {
+    emaPriceMin = emaAlpha * targetMin + (1 - emaAlpha) * emaPriceMin;
+    emaPriceMax = emaAlpha * targetMax + (1 - emaAlpha) * emaPriceMax;
+  }
+
+  // avoid degenerate span
+  if (emaPriceMax - emaPriceMin < minRangeAbsolute){
+    const mid = (emaPriceMax + emaPriceMin) / 2;
+    emaPriceMin = Math.max(0, mid - minRangeAbsolute/2);
+    emaPriceMax = mid + minRangeAbsolute/2;
+  }
+
+  chart.options.scales.price.min = emaPriceMin;
+  chart.options.scales.price.max = emaPriceMax;
+}
 
 // ---------- helpers ----------
 function pushPoint(label, price, qty){
@@ -144,31 +221,14 @@ function pushPoint(label, price, qty){
   btcPrices.push(price ?? null);
   btcVolumes.push(qty ?? 0);
 
-  while(labels.length > MAX_POINTS){ labels.shift(); btcPrices.shift(); btcVolumes.shift(); }
+  while(labels.length > MAX_POINTS){
+    labels.shift(); btcPrices.shift(); btcVolumes.shift();
+  }
 }
 
 function updateUI(lastPrice){
   document.getElementById('priceStatus').textContent = `BTC USDT: ${lastPrice ? Number(lastPrice).toLocaleString() : '—'}`;
   document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`;
-}
-
-function adjustPriceScale(){
-  const arr = btcPrices.filter(v => v != null);
-  if (!arr.length) return;
-  const min = Math.min(...arr);
-  const max = Math.max(...arr);
-
-  if (min === max){
-    // tiny wiggle around value
-    const pad = Math.max(1, Math.abs(min) * 0.001);
-    chart.options.scales.price.min = min - pad;
-    chart.options.scales.price.max = max + pad;
-  } else {
-    const range = max - min;
-    const pad = range * 0.25; // show 25% padding to amplify small moves
-    chart.options.scales.price.min = Math.max(0, min - pad);
-    chart.options.scales.price.max = max + pad;
-  }
 }
 
 // ---------- WebSocket (BTC only) + REST fallback ----------
@@ -177,7 +237,7 @@ let restTimer = null;
 let lastBTC = null;
 
 function startWebSocket(){
-  // start fresh at page load
+  // reset session (chart should start from load time)
   startTime = Date.now();
   started = false;
   labels.length = 0; btcPrices.length = 0; btcVolumes.length = 0;
@@ -198,9 +258,9 @@ function startWebSocket(){
     socket.onmessage = (evt) => {
       try{
         const payload = JSON.parse(evt.data);
-        const stream = payload.stream;
         const d = payload.data;
-        const tradeTs = d.T; if (tradeTs < startTime) return; // ignore older trades
+        const tradeTs = d.T;
+        if (tradeTs < startTime) return; // ignore older trades
 
         const label = `+${((tradeTs - startTime)/1000).toFixed(2)}s`;
         const price = parseFloat(d.p);
@@ -209,22 +269,33 @@ function startWebSocket(){
         pushPoint(label, price, qty);
         lastBTC = price;
 
-        // dynamic scale then update
+        // update scale smoothly and redraw
         adjustPriceScale();
         chart.update('none');
         updateUI(lastBTC);
-      }catch(e){ console.error('msg parse', e); }
+      } catch(e) { console.error('ws onmessage parse', e); }
     };
 
-    socket.onerror = (err) => { console.error('WS error', err); document.getElementById('last').textContent = 'Last update: websocket error — falling back to REST'; startRestFallback(); };
-    socket.onclose = (ev) => { console.warn('WS closed', ev); if (!ev.wasClean) startRestFallback(); };
-  }catch(e){ console.error('WS start failed', e); startRestFallback(); }
+    socket.onerror = (err) => {
+      console.error('WS error', err);
+      document.getElementById('last').textContent = 'Last update: websocket error — falling back to REST';
+      startRestFallback();
+    };
+
+    socket.onclose = (ev) => {
+      console.warn('WS closed', ev);
+      if (!ev.wasClean) startRestFallback();
+    };
+  } catch(e){
+    console.error('WS start failed', e);
+    startRestFallback();
+  }
 }
 
 function startRestFallback(){
   if (restTimer) return;
   REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5);
-  restTimer = setInterval(async ()=>{
+  restTimer = setInterval(async () => {
     try{
       const resp = await fetch('https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1');
       const arr = await resp.json();
@@ -234,22 +305,24 @@ function startRestFallback(){
           const label = `+${((t - startTime)/1000).toFixed(2)}s`;
           pushPoint(label, parseFloat(arr[0].price), parseFloat(arr[0].qty));
           lastBTC = parseFloat(arr[0].price);
-          adjustPriceScale(); chart.update('none'); updateUI(lastBTC);
+          adjustPriceScale();
+          chart.update('none');
+          updateUI(lastBTC);
         }
       }
-    }catch(err){ console.error('REST fallback error', err); }
+    } catch(err){ console.error('REST fallback error', err); }
   }, REST_INTERVAL_SEC * 1000);
+
   document.getElementById('last').textContent = 'Last update: using REST fallback';
 }
 
 function stopRestFallback(){ if (restTimer){ clearInterval(restTimer); restTimer = null; } }
 
 // controls
-document.getElementById('apply').addEventListener('click', ()=>{
+document.getElementById('apply').addEventListener('click', () => {
   MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400);
   REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5);
   labels.length = 0; btcPrices.length = 0; btcVolumes.length = 0; chart.update();
-  // restart WS to reset startTime
   try{ if (socket) socket.close(); } catch(e){}
   startWebSocket();
 });
