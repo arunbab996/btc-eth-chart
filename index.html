@@ -11,10 +11,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8}
+    :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8;--warn:#ffcc00}
     html,body{height:100%;margin:0;overflow:hidden}
     body{background:var(--bg);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial;color:#071122;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box}
-
     .card{width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,0.06);box-sizing:border-box;max-height: calc(100vh - 20px);display:flex;flex-direction:column;gap:8px;overflow:hidden}
 
     header{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -40,6 +39,9 @@
     .price-value{font-weight:700;font-size:18px}
     .small{font-size:12px;color:var(--muted)}
 
+    .badge{padding:6px 10px;border-radius:999px;background:var(--warn);color:#2b2b00;font-weight:600;font-size:12px}
+    .hidden{display:none}
+
     .btn-ghost{background:transparent;border:1px solid #e6e9ef;padding:6px 8px;border-radius:8px}
 
     footer{font-size:12px;color:var(--muted);text-align:center;padding-top:6px}
@@ -57,6 +59,8 @@
       </div>
 
       <div class="header-controls">
+        <div id="convBadge" class="badge hidden" title="Conversion status">Conversion: unavailable</div>
+
         <label class="small">Currency</label>
         <select id="currencySelector" title="Display currency">
           <option value="USDT">USDT</option>
@@ -67,6 +71,8 @@
           <option value="JPY">JPY</option>
           <option value="AUD">AUD</option>
           <option value="SGD">SGD</option>
+          <option value="CAD">CAD</option>
+          <option value="CHF">CHF</option>
         </select>
 
         <label class="small">Max ticks</label>
@@ -138,28 +144,35 @@
   </div>
 
 <script>
+// Robust currency conversion + visual badge + retries
+// - Fetches conversion rates from exchangerate.host (USD-based)
+// - Retries if it fails, shows a visible badge when conversion unavailable
+// - Applies conversion to chart + panel prices immediately
+// - Forces a manual refresh available via console function refreshRates()
+
 // ---------- config ----------
 let MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400);
 let REST_INTERVAL_SEC = Number(document.getElementById('fallbackInterval').value) || 5;
 let selectedCurrency = document.getElementById('currencySelector').value || 'USDT';
-
 const pageLoadTime = Date.now();
 const symbolStart = { BTC: pageLoadTime, ETH: pageLoadTime };
 
-// buffers (raw prices in USDT)
+// buffers (raw prices in USDT from Binance)
 const btcLabels = [], btcPrices = [], btcVolumes = [];
 const ethLabels = [], ethPrices = [], ethVolumes = [];
 
 let activeSymbol = 'BTC';
 let lastBTC = null, lastETH = null, prevBTC = null, prevETH = null;
 
-// conversion rate multiplier (1 by default)
-let currencyRate = 1; // multiply raw prices by this to display selectedCurrency
-let currencySymbol = 'USDT';
+// conversion rate multiplier and symbol
+let currencyRate = 1; let currencySymbol = 'USDT';
+let cachedRates = null; // {INR: 82.3, EUR: 0.94, ...}
+
+const convBadge = document.getElementById('convBadge');
 
 const ctx = document.getElementById('chart').getContext('2d');
 
-// ---------- Chart.js setup ----------
+// ---------- Chart.js ----------
 const chart = new Chart(ctx, {
   data: {
     labels: btcLabels,
@@ -187,34 +200,56 @@ function formatChange(current, previous){ if (current==null||previous==null) ret
 
 function updateTopLabelAndPanels(){ const displayVal = (activeSymbol==='BTC' ? lastBTC : lastETH); const shown = (displayVal==null) ? '—' : Number(displayVal * currencyRate).toLocaleString(); const unit = currencySymbol; document.getElementById('priceStatus').textContent = `${activeSymbol} ${unit}: ${shown}`; document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`; document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC * currencyRate).toLocaleString() : '—'; document.getElementById('ethLive').textContent = lastETH ? Number(lastETH * currencyRate).toLocaleString() : '—'; document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC, prevBTC) : ''; document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH, prevETH) : ''; }
 
-// ---------- currency conversion (exchangerate.host multi-symbol fetch) ----------
-async function fetchConversionRates(){
+// ---------- fetch + retry for rates ----------
+async function fetchConversionRatesOnce(){
+  const symbols = ['INR','EUR','GBP','JPY','AUD','SGD','CAD','CHF'];
+  const url = 'https://api.exchangerate.host/latest?base=USD&symbols=' + symbols.join(',');
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(), 5000);
   try{
-    // fetch multiple symbols in one request
-    const symbols = ['INR','EUR','GBP','JPY','AUD','SGD'];
-    const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=' + symbols.join(','));
-    const json = await res.json();
-    if (json && json.rates){ return json.rates; }
-  }catch(e){ console.error('conversion fetch failed', e); }
+    const r = await fetch(url, {signal: controller.signal});
+    clearTimeout(timeout);
+    if (!r.ok) throw new Error('status ' + r.status);
+    const j = await r.json();
+    return j.rates || null;
+  }catch(e){ clearTimeout(timeout); console.warn('fetchConversionRatesOnce failed', e); return null; }
+}
+
+async function fetchConversionRatesWithRetries(tries = 3, waitMs = 2000){
+  for (let i=0;i<tries;i++){
+    const rates = await fetchConversionRatesOnce();
+    if (rates) return rates;
+    await new Promise(r=>setTimeout(r, waitMs));
+  }
   return null;
 }
 
-// cache fetched rates
-let cachedRates = null;
+async function refreshRates(){
+  convBadge.classList.add('hidden');
+  const rates = await fetchConversionRatesWithRetries(4, 2000);
+  if (rates){ cachedRates = rates; convBadge.classList.add('hidden'); return true; }
+  cachedRates = null; // mark failure
+  convBadge.textContent = 'Conversion: unavailable'; convBadge.classList.remove('hidden'); return false;
+}
+
 async function applyCurrencyChange(to){ selectedCurrency = to;
   if (to === 'USDT' || to === 'USD'){
-    currencyRate = 1; currencySymbol = to;
+    currencyRate = 1; currencySymbol = to; convBadge.classList.add('hidden');
   } else {
-    if (!cachedRates){ cachedRates = await fetchConversionRates(); }
-    if (cachedRates && cachedRates[to]){ currencyRate = cachedRates[to]; currencySymbol = to; }
-    else { console.warn('conversion rate not available, falling back to 1'); currencyRate = 1; currencySymbol = to; }
+    if (!cachedRates){ await refreshRates(); }
+    if (cachedRates && cachedRates[to]){ currencyRate = cachedRates[to]; currencySymbol = to; convBadge.classList.add('hidden'); }
+    else { console.warn('conversion rate not available for', to); currencyRate = 1; currencySymbol = to; convBadge.textContent = 'Conversion: unavailable'; convBadge.classList.remove('hidden'); }
   }
-  // convert and push to chart
+  // update chart and panels
   if (activeSymbol === 'BTC'){ chart.data.datasets[0].data = getConvertedArray(btcPrices); } else { chart.data.datasets[0].data = getConvertedArray(ethPrices); }
   const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices);
   adjustPriceScaleForConvertedArray(convArr);
   chart.update(); updateTopLabelAndPanels(); }
 
+// make refreshRates available in console for quick debugging
+window.refreshRates = refreshRates;
+
+// ---------- swap chart ----------
 function setActiveSymbol(symbol){ if (symbol === activeSymbol) return; activeSymbol = symbol; document.getElementById('btcPanel').classList.toggle('active', activeSymbol==='BTC'); document.getElementById('ethPanel').classList.toggle('active', activeSymbol==='ETH'); document.getElementById('btcPanel').setAttribute('aria-pressed', activeSymbol==='BTC'); document.getElementById('ethPanel').setAttribute('aria-pressed', activeSymbol==='ETH'); if (activeSymbol === 'BTC'){ chart.data.labels = btcLabels; chart.data.datasets[0].data = getConvertedArray(btcPrices); chart.data.datasets[1].data = btcVolumes; chart.data.datasets[0].borderColor = '#f7931a'; chart.data.datasets[0].backgroundColor = '#f7931a'; } else { chart.data.labels = ethLabels; chart.data.datasets[0].data = getConvertedArray(ethPrices); chart.data.datasets[1].data = ethVolumes; chart.data.datasets[0].borderColor = '#2f7ed8'; chart.data.datasets[0].backgroundColor = '#2f7ed8'; } window.__emaMin = null; window.__emaMax = null; const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(convArr); chart.update(); updateTopLabelAndPanels(); }
 
 // ---------- WebSocket + REST fallback ----------
@@ -245,9 +280,18 @@ document.getElementById('currencySelector').addEventListener('change', async (e)
 
 document.getElementById('apply').addEventListener('click', ()=>{ MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400); REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5); while (btcLabels.length>MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); btcVolumes.shift(); } while (ethLabels.length>MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); ethVolumes.shift(); } window.__emaMin=null; window.__emaMax=null; setActiveSymbol(activeSymbol); });
 
-// ---------- start ----------
-// preload rates and then start
-fetchConversionRates().then(rates=>{ cachedRates = rates; applyCurrencyChange(selectedCurrency).then(()=>{ startWebSocket(); setActiveSymbol('BTC'); }); });
+// ---------- startup sequence ----------
+// 1) fetch rates (with retries). 2) apply selected currency. 3) start WS (with REST fallback). This avoids race where WS ticks arrive before rates are available.
+(async function boot(){
+  const ok = await refreshRates();
+  if (!ok) console.warn('conversion rates unavailable at startup; using 1:1 fallback');
+  await applyCurrencyChange(selectedCurrency);
+  startWebSocket();
+  setActiveSymbol('BTC');
+})();
+
+// expose refreshRates for debugging from console
+window.refreshRates = refreshRates;
 
 window.addEventListener('beforeunload', ()=>{ try{ if (socket) socket.close(); }catch(e){} stopRestFallback(); });
 </script>
