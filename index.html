@@ -13,10 +13,8 @@
   <style>
     :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8}
     html,body{height:100%;margin:0;overflow:hidden}
-    /* CENTER the card vertically so chart is visually centered on screen */
     body{background:var(--bg);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial;color:#071122;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box}
 
-    /* card holds everything and fits viewport */
     .card{width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,0.06);box-sizing:border-box;max-height: calc(100vh - 20px);display:flex;flex-direction:column;gap:8px;overflow:hidden}
 
     header{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -24,16 +22,13 @@
     h1{margin:0;font-size:15px}
     .meta{font-size:13px;color:var(--muted)}
 
-    /* compact top-right controls moved into header (no more blue boxes) */
     .header-controls{display:flex;align-items:center;gap:8px}
     select,input,button{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:white}
 
-    /* main area: chart + slim right column */
     .main{display:flex;gap:12px;align-items:stretch;flex:1 1 auto;min-height:0}
     .chart-wrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
     .right{width:200px;flex:0 0 200px;display:flex;flex-direction:column;gap:10px}
 
-    /* bigger chart area - reduces unused whitespace */
     .chart-canvas{flex:1 1 auto;min-height:0;position:relative}
     canvas{width:100% !important;height:100% !important;display:block}
 
@@ -45,7 +40,7 @@
     .price-value{font-weight:700;font-size:18px}
     .small{font-size:12px;color:var(--muted)}
 
-    .controls-compact{display:flex;gap:6px;align-items:center}
+    .btn-ghost{background:transparent;border:1px solid #e6e9ef;padding:6px 8px;border-radius:8px}
 
     footer{font-size:12px;color:var(--muted);text-align:center;padding-top:6px}
 
@@ -61,13 +56,17 @@
         <div class="meta">Click the symbol on the right to switch the main chart. Data is collected from the moment the page loads (unless you choose "Start on click").</div>
       </div>
 
-      <!-- moved controls to header (top-right) -->
       <div class="header-controls">
         <label class="small">Currency</label>
         <select id="currencySelector" title="Display currency">
           <option value="USDT">USDT</option>
           <option value="USD">USD</option>
           <option value="INR">INR</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+          <option value="AUD">AUD</option>
+          <option value="SGD">SGD</option>
         </select>
 
         <label class="small">Max ticks</label>
@@ -186,36 +185,37 @@ function adjustPriceScaleForConvertedArray(dataArray){ const arr = dataArray.fil
 function pushTick(symbol,label,price,qty){ if (symbol==='BTC'){ btcLabels.push(label); btcPrices.push(price ?? null); btcVolumes.push(qty ?? 0); while(btcLabels.length>MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); btcVolumes.shift(); } } else { ethLabels.push(label); ethPrices.push(price ?? null); ethVolumes.push(qty ?? 0); while(ethLabels.length>MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); ethVolumes.shift(); } } }
 function formatChange(current, previous){ if (current==null||previous==null) return ''; const diff = current-previous; const pct = (diff/previous)*100; const sign = diff>=0?'+':'-'; return `${sign}${Math.abs(pct).toFixed(2)}%`; }
 
-function updateTopLabelAndPanels(){ // update top label and right-panel numbers using currencyRate
-  const displayVal = (activeSymbol==='BTC' ? lastBTC : lastETH);
-  const shown = (displayVal==null) ? '—' : Number(displayVal * currencyRate).toLocaleString();
-  const unit = currencySymbol;
-  document.getElementById('priceStatus').textContent = `${activeSymbol} ${unit}: ${shown}`;
-  document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`;
+function updateTopLabelAndPanels(){ const displayVal = (activeSymbol==='BTC' ? lastBTC : lastETH); const shown = (displayVal==null) ? '—' : Number(displayVal * currencyRate).toLocaleString(); const unit = currencySymbol; document.getElementById('priceStatus').textContent = `${activeSymbol} ${unit}: ${shown}`; document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`; document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC * currencyRate).toLocaleString() : '—'; document.getElementById('ethLive').textContent = lastETH ? Number(lastETH * currencyRate).toLocaleString() : '—'; document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC, prevBTC) : ''; document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH, prevETH) : ''; }
 
-  // right panels
-  document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC * currencyRate).toLocaleString() : '—';
-  document.getElementById('ethLive').textContent = lastETH ? Number(lastETH * currencyRate).toLocaleString() : '—';
-  document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC, prevBTC) : '';
-  document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH, prevETH) : '';
+// ---------- currency conversion (exchangerate.host multi-symbol fetch) ----------
+async function fetchConversionRates(){
+  try{
+    // fetch multiple symbols in one request
+    const symbols = ['INR','EUR','GBP','JPY','AUD','SGD'];
+    const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=' + symbols.join(','));
+    const json = await res.json();
+    if (json && json.rates){ return json.rates; }
+  }catch(e){ console.error('conversion fetch failed', e); }
+  return null;
 }
 
-// ---------- currency conversion (exchangerate.host) ----------
-async function fetchConversionRate(to){ if (to === 'USDT' || to === 'USD'){ currencyRate = 1; currencySymbol = to; return; } try{ const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR'); const json = await res.json(); if (json && json.rates && json.rates.INR){ currencyRate = json.rates.INR; currencySymbol = 'INR'; return; } } catch(e){ console.error('conversion fetch failed', e); } currencyRate = 1; currencySymbol = to; }
-
-async function applyCurrencyChange(to){ selectedCurrency = to; await fetchConversionRate(to);
-  // rebuild chart data using converted arrays
+// cache fetched rates
+let cachedRates = null;
+async function applyCurrencyChange(to){ selectedCurrency = to;
+  if (to === 'USDT' || to === 'USD'){
+    currencyRate = 1; currencySymbol = to;
+  } else {
+    if (!cachedRates){ cachedRates = await fetchConversionRates(); }
+    if (cachedRates && cachedRates[to]){ currencyRate = cachedRates[to]; currencySymbol = to; }
+    else { console.warn('conversion rate not available, falling back to 1'); currencyRate = 1; currencySymbol = to; }
+  }
+  // convert and push to chart
   if (activeSymbol === 'BTC'){ chart.data.datasets[0].data = getConvertedArray(btcPrices); } else { chart.data.datasets[0].data = getConvertedArray(ethPrices); }
-  // adjust axis using converted values
   const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices);
   adjustPriceScaleForConvertedArray(convArr);
   chart.update(); updateTopLabelAndPanels(); }
 
-function setActiveSymbol(symbol){ if (symbol === activeSymbol) return; activeSymbol = symbol; document.getElementById('btcPanel').classList.toggle('active', activeSymbol==='BTC'); document.getElementById('ethPanel').classList.toggle('active', activeSymbol==='ETH'); document.getElementById('btcPanel').setAttribute('aria-pressed', activeSymbol==='BTC'); document.getElementById('ethPanel').setAttribute('aria-pressed', activeSymbol==='ETH');
-  if (activeSymbol === 'BTC'){ chart.data.labels = btcLabels; chart.data.datasets[0].data = getConvertedArray(btcPrices); chart.data.datasets[1].data = btcVolumes; chart.data.datasets[0].borderColor = '#f7931a'; chart.data.datasets[0].backgroundColor = '#f7931a'; }
-  else { chart.data.labels = ethLabels; chart.data.datasets[0].data = getConvertedArray(ethPrices); chart.data.datasets[1].data = ethVolumes; chart.data.datasets[0].borderColor = '#2f7ed8'; chart.data.datasets[0].backgroundColor = '#2f7ed8'; }
-  // adjust axis to converted values
-  window.__emaMin = null; window.__emaMax = null; const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(convArr); chart.update(); updateTopLabelAndPanels(); }
+function setActiveSymbol(symbol){ if (symbol === activeSymbol) return; activeSymbol = symbol; document.getElementById('btcPanel').classList.toggle('active', activeSymbol==='BTC'); document.getElementById('ethPanel').classList.toggle('active', activeSymbol==='ETH'); document.getElementById('btcPanel').setAttribute('aria-pressed', activeSymbol==='BTC'); document.getElementById('ethPanel').setAttribute('aria-pressed', activeSymbol==='ETH'); if (activeSymbol === 'BTC'){ chart.data.labels = btcLabels; chart.data.datasets[0].data = getConvertedArray(btcPrices); chart.data.datasets[1].data = btcVolumes; chart.data.datasets[0].borderColor = '#f7931a'; chart.data.datasets[0].backgroundColor = '#f7931a'; } else { chart.data.labels = ethLabels; chart.data.datasets[0].data = getConvertedArray(ethPrices); chart.data.datasets[1].data = ethVolumes; chart.data.datasets[0].borderColor = '#2f7ed8'; chart.data.datasets[0].backgroundColor = '#2f7ed8'; } window.__emaMin = null; window.__emaMax = null; const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(convArr); chart.update(); updateTopLabelAndPanels(); }
 
 // ---------- WebSocket + REST fallback ----------
 let socket=null, restTimer=null;
@@ -241,14 +241,13 @@ document.getElementById('ethPanel').addEventListener('click', ()=> handlePanelCl
 document.getElementById('btcClear').addEventListener('click',(ev)=>{ ev.stopPropagation(); btcLabels.length=0; btcPrices.length=0; btcVolumes.length=0; window.__emaMin=null; window.__emaMax=null; if (activeSymbol==='BTC') chart.update(); });
 document.getElementById('ethClear').addEventListener('click',(ev)=>{ ev.stopPropagation(); ethLabels.length=0; ethPrices.length=0; ethVolumes.length=0; window.__emaMin=null; window.__emaMax=null; if (activeSymbol==='ETH') chart.update(); });
 
-// currency selector
 document.getElementById('currencySelector').addEventListener('change', async (e)=>{ const to = e.target.value; await applyCurrencyChange(to); });
 
-// apply button
 document.getElementById('apply').addEventListener('click', ()=>{ MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400); REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5); while (btcLabels.length>MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); btcVolumes.shift(); } while (ethLabels.length>MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); ethVolumes.shift(); } window.__emaMin=null; window.__emaMax=null; setActiveSymbol(activeSymbol); });
 
 // ---------- start ----------
-applyCurrencyChange(selectedCurrency).then(()=>{ startWebSocket(); setActiveSymbol('BTC'); });
+// preload rates and then start
+fetchConversionRates().then(rates=>{ cachedRates = rates; applyCurrencyChange(selectedCurrency).then(()=>{ startWebSocket(); setActiveSymbol('BTC'); }); });
 
 window.addEventListener('beforeunload', ()=>{ try{ if (socket) socket.close(); }catch(e){} stopRestFallback(); });
 </script>
