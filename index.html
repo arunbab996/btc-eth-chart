@@ -4,65 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Magic Internet Money</title>
-
-  <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white' font-family='Arial, Helvetica, sans-serif'>฿</text></svg>">
-
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-
   <style>
-    :root{--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8;--warn:#ffcc00}
-    html,body{height:100%;margin:0;overflow:hidden}
-    body{background:var(--bg);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial;color:#071122;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box}
-    .card{width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,0.06);box-sizing:border-box;max-height: calc(100vh - 20px);display:flex;flex-direction:column;gap:8px;overflow:hidden}
-
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .left{display:flex;flex-direction:column;gap:4px}
-    h1{margin:0;font-size:15px}
-    .meta{font-size:13px;color:var(--muted)}
-
-    .header-controls{display:flex;align-items:center;gap:8px}
-    select,input,button{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:white}
-
-    .main{display:flex;gap:12px;align-items:stretch;flex:1 1 auto;min-height:0}
-    .chart-wrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
-    .right{width:200px;flex:0 0 200px;display:flex;flex-direction:column;gap:10px}
-
-    .chart-canvas{flex:1 1 auto;min-height:0;position:relative}
-    canvas{width:100% !important;height:100% !important;display:block}
-
-    .price-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(12,20,44,0.06);cursor:pointer;user-select:none;border:1px solid transparent;display:flex;flex-direction:column;gap:6px}
-    .price-card.active{border-color:rgba(0,0,0,0.06);box-shadow:0 12px 30px rgba(12,20,44,0.09)}
-
-    .price-row{display:flex;justify-content:space-between;align-items:center}
-    .price-label{font-size:12px;color:var(--muted)}
-    .price-value{font-weight:700;font-size:18px}
-    .small{font-size:12px;color:var(--muted)}
-
-    .badge{padding:6px 10px;border-radius:999px;background:var(--warn);color:#2b2b00;font-weight:600;font-size:12px}
+    :root {--bg:#f5f7fb;--card:#fff;--muted:#6b7280;--btc:#f7931a;--eth:#2f7ed8;--warn:#ffcc00}
+    html,body {height:100%;margin:0;overflow:hidden}
+    body {background:var(--bg);font-family:Inter,system-ui;display:flex;justify-content:center;align-items:center;padding:10px}
+    .card {width:97%;max-width:1400px;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(12,20,44,.06);display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 20px);}
+    header {display:flex;justify-content:space-between;align-items:center}
+    .header-controls{display:flex;gap:8px;align-items:center}
+    select,input,button{padding:6px 8px;border-radius:8px;border:1px solid #e6e9ef;background:#fff}
+    .main{display:flex;gap:12px;flex:1;min-height:0}
+    .right{width:200px;display:flex;flex-direction:column;gap:10px}
+    .price-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(12,20,44,.06);cursor:pointer;transition:opacity .2s,transform .2s}
+    .price-card.active{transform:translateY(-4px);border:1px solid rgba(0,0,0,.06)}
+    .price-card:not(.active){opacity:0.6}
+    canvas{width:100%!important;height:100%!important}
+    .badge{padding:6px 10px;border-radius:999px;background:var(--warn);font-size:12px;font-weight:600}
     .hidden{display:none}
-
-    .btn-ghost{background:transparent;border:1px solid #e6e9ef;padding:6px 8px;border-radius:8px}
-
-    footer{font-size:12px;color:var(--muted);text-align:center;padding-top:6px}
-
-    @media(max-width:900px){.right{width:160px}}
-    @media(max-width:700px){header{flex-direction:column;align-items:flex-start} .main{flex-direction:column} .right{width:100%;flex:0 0 auto}}
   </style>
 </head>
-<body data-ref-image="/mnt/data/Screenshot 2025-11-22 at 3.24.00 PM.png">
-  <div class="card" role="main">
+<body>
+  <div class="card">
     <header>
-      <div class="left">
-        <h1>Live Tick Chart — BTC / ETH</h1>
-        <div class="meta">Click the symbol on the right to switch the main chart. Data is collected from the moment the page loads (unless you choose "Start on click").</div>
+      <div>
+        <h1 style="margin:0;font-size:15px">Live Tick Chart — BTC / ETH</h1>
+        <div style="font-size:13px;color:var(--muted)">Click a coin to switch the chart.</div>
       </div>
-
       <div class="header-controls">
-        <div id="convBadge" class="badge hidden" title="Conversion status">Conversion: unavailable</div>
-
-        <label class="small">Currency</label>
-        <select id="currencySelector" title="Display currency">
+        <div id="convBadge" class="badge hidden">Conversion: unavailable</div>
+        <label style="font-size:12px;color:var(--muted)">Currency</label>
+        <select id="currencySelector">
           <option value="USDT">USDT</option>
           <option value="USD">USD</option>
           <option value="INR">INR</option>
@@ -71,229 +43,88 @@
           <option value="JPY">JPY</option>
           <option value="AUD">AUD</option>
           <option value="SGD">SGD</option>
-          <option value="CAD">CAD</option>
-          <option value="CHF">CHF</option>
         </select>
-
-        <label class="small">Max ticks</label>
-        <input id="maxPoints" type="number" min="50" value="400" style="width:80px" />
-
-        <label class="small">Fallback</label>
-        <select id="fallbackInterval" title="REST fallback interval (seconds)">
-          <option value="2">2s</option>
-          <option value="5" selected>5s</option>
-          <option value="10">10s</option>
-        </select>
-
-        <button id="apply">Apply</button>
       </div>
     </header>
 
     <div class="main">
-      <div class="chart-wrap">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
           <div id="priceStatus">BTC USDT: —</div>
-          <div id="startedAt" class="small">Started at: —</div>
         </div>
-
-        <div class="chart-canvas"><canvas id="chart" aria-label="Live tick chart"></canvas></div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-          <div id="last" class="small">Last update: —</div>
-        </div>
+        <div style="flex:1;min-height:0"><canvas id="chart"></canvas></div>
       </div>
 
-      <div class="right" aria-label="Live prices">
-        <div id="btcPanel" class="price-card active" role="button" aria-pressed="true">
-          <div class="price-row">
-            <div>
-              <div class="price-label">BTC (Live)</div>
-              <div class="price-value" id="btcLive">—</div>
-            </div>
-            <div style="text-align:right">
-              <div class="small" id="btcChange"></div>
-              <div style="height:6px"></div>
-              <button id="btcClear" class="btn-ghost">Clear</button>
-            </div>
-          </div>
+      <div class="right">
+        <div id="btcPanel" class="price-card active">
+          <div style="font-size:12px;color:var(--muted)">BTC</div>
+          <div id="btcLive" style="font-size:20px;font-weight:700">—</div>
         </div>
-
-        <div id="ethPanel" class="price-card" role="button" aria-pressed="false">
-          <div class="price-row">
-            <div>
-              <div class="price-label">ETH (Live)</div>
-              <div class="price-value" id="ethLive">—</div>
-            </div>
-            <div style="text-align:right">
-              <div class="small" id="ethChange"></div>
-              <div style="height:6px"></div>
-              <button id="ethClear" class="btn-ghost">Clear</button>
-            </div>
-          </div>
+        <div id="ethPanel" class="price-card">
+          <div style="font-size:12px;color:var(--muted)">ETH</div>
+          <div id="ethLive" style="font-size:20px;font-weight:700">—</div>
         </div>
-
-        <div style="display:flex;gap:8px;align-items:center">
-          <label class="small"><input id="startOnClick" type="checkbox" /> Start on click</label>
-        </div>
-
-        <img src="/mnt/data/Screenshot 2025-11-22 at 3.24.00 PM.png" alt="ref" style="display:none" />
       </div>
     </div>
-
-    <footer></footer>
   </div>
 
 <script>
-// Robust currency conversion + visual badge + retries
-// - Fetches conversion rates from exchangerate.host (USD-based)
-// - Retries if it fails, shows a visible badge when conversion unavailable
-// - Applies conversion to chart + panel prices immediately
-// - Forces a manual refresh available via console function refreshRates()
-
-// ---------- config ----------
-let MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400);
-let REST_INTERVAL_SEC = Number(document.getElementById('fallbackInterval').value) || 5;
-let selectedCurrency = document.getElementById('currencySelector').value || 'USDT';
-const pageLoadTime = Date.now();
-const symbolStart = { BTC: pageLoadTime, ETH: pageLoadTime };
-
-// buffers (raw prices in USDT from Binance)
-const btcLabels = [], btcPrices = [], btcVolumes = [];
-const ethLabels = [], ethPrices = [], ethVolumes = [];
-
 let activeSymbol = 'BTC';
-let lastBTC = null, lastETH = null, prevBTC = null, prevETH = null;
+let lastBTC=null,lastETH=null; let prevBTC=null,prevETH=null;
+let btcLabels=[],btcPrices=[],ethLabels=[],ethPrices=[];
+let currencyRate=1,currencySymbol='USDT'; let cachedRates=null;
+const convBadge=document.getElementById('convBadge');
 
-// conversion rate multiplier and symbol
-let currencyRate = 1; let currencySymbol = 'USDT';
-let cachedRates = null; // {INR: 82.3, EUR: 0.94, ...}
+const ctx=document.getElementById('chart').getContext('2d');
+const chart=new Chart(ctx,{type:'line',data:{labels:btcLabels,datasets:[{label:'Price',data:btcPrices,borderColor:'#f7931a',borderWidth:2,pointRadius:0}]},options:{animation:false,maintainAspectRatio:false,responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
 
-const convBadge = document.getElementById('convBadge');
-
-const ctx = document.getElementById('chart').getContext('2d');
-
-// ---------- Chart.js ----------
-const chart = new Chart(ctx, {
-  data: {
-    labels: btcLabels,
-    datasets: [
-      { type: 'line', label: 'Price', data: btcPrices, borderColor: '#f7931a', backgroundColor: '#f7931a', borderWidth:2, pointRadius:3, stepped:true, yAxisID:'price', tension:0.02 },
-      { type: 'bar', label: 'Qty', data: btcVolumes, backgroundColor:'rgba(247,147,26,0.22)', yAxisID:'volume' }
-    ]
-  },
-  options: {
-    animation: { duration: 200, easing: 'linear' },
-    maintainAspectRatio:false,
-    responsive:true,
-    interaction:{ mode:'index', intersect:false },
-    plugins:{ legend:{ display:false } },
-    scales:{ x:{ ticks:{ maxRotation:45, autoSkip:true, maxTicksLimit:30 } }, price:{ type:'linear', position:'left', title:{display:true,text:'Price'}, grid:{drawOnChartArea:true}}, volume:{ type:'linear', position:'right', title:{display:true,text:'Quantity'}, grid:{drawOnChartArea:false} } }
-  }
-});
-
-// ---------- conversion helpers ----------
-function getConvertedArray(rawArray){ return rawArray.map(v => (v === null || v === undefined) ? null : Number((v * currencyRate).toFixed(8))); }
-function adjustPriceScaleForConvertedArray(dataArray){ const arr = dataArray.filter(v => (v !== null && !isNaN(v))); if (!arr.length) return; const rawMin = Math.min(...arr), rawMax = Math.max(...arr); const minRangeAbsolute = Math.max(0.5, Math.abs(rawMax) * 0.00012); let range = rawMax - rawMin; if (range < minRangeAbsolute) range = minRangeAbsolute; const padPct = 0.015; const pad = Math.max(range * padPct, minRangeAbsolute); const targetMin = Math.max(0, rawMin - pad); const targetMax = rawMax + pad; const emaAlpha = 0.28; if (typeof window.__emaMin === 'undefined') window.__emaMin = null; if (typeof window.__emaMax === 'undefined') window.__emaMax = null; if (window.__emaMin === null || window.__emaMax === null){ window.__emaMin = targetMin; window.__emaMax = targetMax; } else { window.__emaMin = emaAlpha * targetMin + (1-emaAlpha) * window.__emaMin; window.__emaMax = emaAlpha * targetMax + (1-emaAlpha) * window.__emaMax; } if (window.__emaMax - window.__emaMin < minRangeAbsolute){ const mid = (window.__emaMax + window.__emaMin)/2; window.__emaMin = Math.max(0, mid - minRangeAbsolute/2); window.__emaMax = mid + minRangeAbsolute/2; } chart.options.scales.price.min = window.__emaMin; chart.options.scales.price.max = window.__emaMax; }
-
-function pushTick(symbol,label,price,qty){ if (symbol==='BTC'){ btcLabels.push(label); btcPrices.push(price ?? null); btcVolumes.push(qty ?? 0); while(btcLabels.length>MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); btcVolumes.shift(); } } else { ethLabels.push(label); ethPrices.push(price ?? null); ethVolumes.push(qty ?? 0); while(ethLabels.length>MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); ethVolumes.shift(); } } }
-function formatChange(current, previous){ if (current==null||previous==null) return ''; const diff = current-previous; const pct = (diff/previous)*100; const sign = diff>=0?'+':'-'; return `${sign}${Math.abs(pct).toFixed(2)}%`; }
-
-function updateTopLabelAndPanels(){ const displayVal = (activeSymbol==='BTC' ? lastBTC : lastETH); const shown = (displayVal==null) ? '—' : Number(displayVal * currencyRate).toLocaleString(); const unit = currencySymbol; document.getElementById('priceStatus').textContent = `${activeSymbol} ${unit}: ${shown}`; document.getElementById('last').textContent = `Last update: ${new Date().toLocaleString()}`; document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC * currencyRate).toLocaleString() : '—'; document.getElementById('ethLive').textContent = lastETH ? Number(lastETH * currencyRate).toLocaleString() : '—'; document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC, prevBTC) : ''; document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH, prevETH) : ''; }
-
-// ---------- fetch + retry for rates ----------
-async function fetchConversionRatesOnce(){
-  const symbols = ['INR','EUR','GBP','JPY','AUD','SGD','CAD','CHF'];
-  const url = 'https://api.exchangerate.host/latest?base=USD&symbols=' + symbols.join(',');
-  const controller = new AbortController();
-  const timeout = setTimeout(()=>controller.abort(), 5000);
+async function fetchRates(){
   try{
-    const r = await fetch(url, {signal: controller.signal});
-    clearTimeout(timeout);
-    if (!r.ok) throw new Error('status ' + r.status);
-    const j = await r.json();
-    return j.rates || null;
-  }catch(e){ clearTimeout(timeout); console.warn('fetchConversionRatesOnce failed', e); return null; }
+    const r=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY,AUD,SGD');
+    const j=await r.json(); return j.rates;
+  }catch(e){return null;}
 }
 
-async function fetchConversionRatesWithRetries(tries = 3, waitMs = 2000){
-  for (let i=0;i<tries;i++){
-    const rates = await fetchConversionRatesOnce();
-    if (rates) return rates;
-    await new Promise(r=>setTimeout(r, waitMs));
+async function applyCurrency(c){
+  currencySymbol=c;
+  if(c==='USD'||c==='USDT'){currencyRate=1;convBadge.classList.add('hidden');}
+  else{
+    if(!cachedRates){cachedRates=await fetchRates();}
+    if(cachedRates&&cachedRates[c]){currencyRate=cachedRates[c];convBadge.classList.add('hidden');}
+    else{currencyRate=1;convBadge.classList.remove('hidden');}
   }
-  return null;
+  updateView();
 }
 
-async function refreshRates(){
-  convBadge.classList.add('hidden');
-  const rates = await fetchConversionRatesWithRetries(4, 2000);
-  if (rates){ cachedRates = rates; convBadge.classList.add('hidden'); return true; }
-  cachedRates = null; // mark failure
-  convBadge.textContent = 'Conversion: unavailable'; convBadge.classList.remove('hidden'); return false;
+function updateView(){
+  const arr=(activeSymbol==='BTC'?btcPrices:ethPrices).map(x=>x*currencyRate);
+  chart.data.datasets[0].data=arr;
+  chart.data.labels=activeSymbol==='BTC'?btcLabels:ethLabels;
+  chart.update();
+  document.getElementById('priceStatus').textContent=`${activeSymbol} ${currencySymbol}: ${arr[arr.length-1]?.toLocaleString()||'—'}`;
+  document.getElementById('btcLive').textContent=lastBTC?(lastBTC*currencyRate).toLocaleString():'—';
+  document.getElementById('ethLive').textContent=lastETH?(lastETH*currencyRate).toLocaleString():'—';
 }
 
-async function applyCurrencyChange(to){ selectedCurrency = to;
-  if (to === 'USDT' || to === 'USD'){
-    currencyRate = 1; currencySymbol = to; convBadge.classList.add('hidden');
-  } else {
-    if (!cachedRates){ await refreshRates(); }
-    if (cachedRates && cachedRates[to]){ currencyRate = cachedRates[to]; currencySymbol = to; convBadge.classList.add('hidden'); }
-    else { console.warn('conversion rate not available for', to); currencyRate = 1; currencySymbol = to; convBadge.textContent = 'Conversion: unavailable'; convBadge.classList.remove('hidden'); }
-  }
-  // update chart and panels
-  if (activeSymbol === 'BTC'){ chart.data.datasets[0].data = getConvertedArray(btcPrices); } else { chart.data.datasets[0].data = getConvertedArray(ethPrices); }
-  const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices);
-  adjustPriceScaleForConvertedArray(convArr);
-  chart.update(); updateTopLabelAndPanels(); }
+function push(symbol,price){
+  if(symbol==='BTC'){btcLabels.push('');btcPrices.push(price);if(btcPrices.length>200)btcPrices.shift();}
+  else{ethLabels.push('');ethPrices.push(price);if(ethPrices.length>200)ethPrices.shift();}
+  if(symbol===activeSymbol) updateView();
+}
 
-// make refreshRates available in console for quick debugging
-window.refreshRates = refreshRates;
+document.getElementById('currencySelector').addEventListener('change',e=>applyCurrency(e.target.value));
+document.getElementById('btcPanel').onclick=()=>{activeSymbol='BTC';document.getElementById('btcPanel').classList.add('active');document.getElementById('ethPanel').classList.remove('active');updateView();};
+document.getElementById('ethPanel').onclick=()=>{activeSymbol='ETH';document.getElementById('ethPanel').classList.add('active');document.getElementById('btcPanel').classList.remove('active');updateView();};
 
-// ---------- swap chart ----------
-function setActiveSymbol(symbol){ if (symbol === activeSymbol) return; activeSymbol = symbol; document.getElementById('btcPanel').classList.toggle('active', activeSymbol==='BTC'); document.getElementById('ethPanel').classList.toggle('active', activeSymbol==='ETH'); document.getElementById('btcPanel').setAttribute('aria-pressed', activeSymbol==='BTC'); document.getElementById('ethPanel').setAttribute('aria-pressed', activeSymbol==='ETH'); if (activeSymbol === 'BTC'){ chart.data.labels = btcLabels; chart.data.datasets[0].data = getConvertedArray(btcPrices); chart.data.datasets[1].data = btcVolumes; chart.data.datasets[0].borderColor = '#f7931a'; chart.data.datasets[0].backgroundColor = '#f7931a'; } else { chart.data.labels = ethLabels; chart.data.datasets[0].data = getConvertedArray(ethPrices); chart.data.datasets[1].data = ethVolumes; chart.data.datasets[0].borderColor = '#2f7ed8'; chart.data.datasets[0].backgroundColor = '#2f7ed8'; } window.__emaMin = null; window.__emaMax = null; const convArr = (activeSymbol==='BTC') ? getConvertedArray(btcPrices) : getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(convArr); chart.update(); updateTopLabelAndPanels(); }
-
-// ---------- WebSocket + REST fallback ----------
-let socket=null, restTimer=null;
-function startWebSocket(){ const url='wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade'; try{ socket=new WebSocket(url); let wsOpen=false; const wsTimeout=setTimeout(()=>{ if(!wsOpen){ console.warn('WS did not open within 3s — using REST fallback'); startRestFallback(); } },3000);
-    socket.onopen = ()=>{ wsOpen=true; clearTimeout(wsTimeout); document.getElementById('startedAt').textContent='Started at: '+new Date(pageLoadTime).toLocaleTimeString(); document.getElementById('last').textContent='Last update: connected (websocket)'; stopRestFallback(); };
-    socket.onmessage = (evt)=>{ try{ const payload=JSON.parse(evt.data); const stream=payload.stream; const d=payload.data; const tradeTs=d.T||Date.now(); const price=parseFloat(d.p); const qty=parseFloat(d.q); const label=`+${((tradeTs-pageLoadTime)/1000).toFixed(2)}s`;
-        if (stream && stream.startsWith('btcusdt')){ prevBTC=lastBTC; lastBTC=price; if (tradeTs >= (symbolStart.BTC || pageLoadTime)){ pushTick('BTC',label,price,qty); if (activeSymbol==='BTC'){ chart.data.datasets[0].data = getConvertedArray(btcPrices); adjustPriceScaleForConvertedArray(getConvertedArray(btcPrices)); chart.update(); } } document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC*currencyRate).toLocaleString() : '—'; document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC,prevBTC) : ''; }
-        else if (stream && stream.startsWith('ethusdt')){ prevETH=lastETH; lastETH=price; if (tradeTs >= (symbolStart.ETH || pageLoadTime)){ pushTick('ETH',label,price,qty); if (activeSymbol==='ETH'){ chart.data.datasets[0].data = getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(getConvertedArray(ethPrices)); chart.update(); } } document.getElementById('ethLive').textContent = lastETH ? Number(lastETH*currencyRate).toLocaleString() : '—'; document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH,prevETH) : ''; }
-        updateTopLabelAndPanels(); } catch(e){ console.error('ws parse',e);} };
-    socket.onerror = (err)=>{ console.error('WS error', err); document.getElementById('last').textContent='Last update: websocket error — falling back to REST'; startRestFallback(); };
-    socket.onclose = (ev)=>{ console.warn('WS closed', ev); if(!ev.wasClean) startRestFallback(); };
-  } catch(e){ console.error('WS start failed', e); startRestFallback(); } }
-
-function startRestFallback(){ if (restTimer) return; REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5); restTimer = setInterval(async ()=>{ try{ const [btcResp,ethResp] = await Promise.all([ fetch('https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1'), fetch('https://api.binance.com/api/v3/trades?symbol=ETHUSDT&limit=1') ]); const btcArr = await btcResp.json(); const ethArr = await ethResp.json(); if (Array.isArray(btcArr) && btcArr.length){ const t = btcArr[0].time; const p = parseFloat(btcArr[0].price); prevBTC=lastBTC; lastBTC=p; if (t >= (symbolStart.BTC || pageLoadTime)){ pushTick('BTC', `+${((t-pageLoadTime)/1000).toFixed(2)}s`, p, parseFloat(btcArr[0].qty)); if (activeSymbol==='BTC'){ chart.data.datasets[0].data = getConvertedArray(btcPrices); adjustPriceScaleForConvertedArray(getConvertedArray(btcPrices)); chart.update(); } } document.getElementById('btcLive').textContent = lastBTC ? Number(lastBTC*currencyRate).toLocaleString() : '—'; document.getElementById('btcChange').textContent = prevBTC ? formatChange(lastBTC,prevBTC) : ''; }
-      if (Array.isArray(ethArr) && ethArr.length){ const t2 = ethArr[0].time; const p2 = parseFloat(ethArr[0].price); prevETH=lastETH; lastETH=p2; if (t2 >= (symbolStart.ETH || pageLoadTime)){ pushTick('ETH', `+${((t2-pageLoadTime)/1000).toFixed(2)}s`, p2, parseFloat(ethArr[0].qty)); if (activeSymbol==='ETH'){ chart.data.datasets[0].data = getConvertedArray(ethPrices); adjustPriceScaleForConvertedArray(getConvertedArray(ethPrices)); chart.update(); } } document.getElementById('ethLive').textContent = lastETH ? Number(lastETH*currencyRate).toLocaleString() : '—'; document.getElementById('ethChange').textContent = prevETH ? formatChange(lastETH,prevETH) : ''; }
-      updateTopLabelAndPanels(); } catch(err){ console.error('REST fallback error', err); } }, REST_INTERVAL_SEC*1000); document.getElementById('last').textContent = 'Last update: using REST fallback'; }
-function stopRestFallback(){ if (restTimer){ clearInterval(restTimer); restTimer = null; } }
-
-// ---------- UI events ----------
-function handlePanelClick(symbol){ const startOnClick = document.getElementById('startOnClick') && document.getElementById('startOnClick').checked; if (startOnClick){ symbolStart[symbol] = Date.now(); if (symbol==='BTC'){ btcLabels.length=0; btcPrices.length=0; btcVolumes.length=0; } else { ethLabels.length=0; ethPrices.length=0; ethVolumes.length=0; } } setActiveSymbol(symbol); }
-document.getElementById('btcPanel').addEventListener('click', ()=> handlePanelClick('BTC'));
-document.getElementById('ethPanel').addEventListener('click', ()=> handlePanelClick('ETH'));
-document.getElementById('btcClear').addEventListener('click',(ev)=>{ ev.stopPropagation(); btcLabels.length=0; btcPrices.length=0; btcVolumes.length=0; window.__emaMin=null; window.__emaMax=null; if (activeSymbol==='BTC') chart.update(); });
-document.getElementById('ethClear').addEventListener('click',(ev)=>{ ev.stopPropagation(); ethLabels.length=0; ethPrices.length=0; ethVolumes.length=0; window.__emaMin=null; window.__emaMax=null; if (activeSymbol==='ETH') chart.update(); });
-
-document.getElementById('currencySelector').addEventListener('change', async (e)=>{ const to = e.target.value; await applyCurrencyChange(to); });
-
-document.getElementById('apply').addEventListener('click', ()=>{ MAX_POINTS = Math.max(50, Number(document.getElementById('maxPoints').value) || 400); REST_INTERVAL_SEC = Math.max(1, Number(document.getElementById('fallbackInterval').value) || 5); while (btcLabels.length>MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); btcVolumes.shift(); } while (ethLabels.length>MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); ethVolumes.shift(); } window.__emaMin=null; window.__emaMax=null; setActiveSymbol(activeSymbol); });
-
-// ---------- startup sequence ----------
-// 1) fetch rates (with retries). 2) apply selected currency. 3) start WS (with REST fallback). This avoids race where WS ticks arrive before rates are available.
-(async function boot(){
-  const ok = await refreshRates();
-  if (!ok) console.warn('conversion rates unavailable at startup; using 1:1 fallback');
-  await applyCurrencyChange(selectedCurrency);
-  startWebSocket();
-  setActiveSymbol('BTC');
-})();
-
-// expose refreshRates for debugging from console
-window.refreshRates = refreshRates;
-
-window.addEventListener('beforeunload', ()=>{ try{ if (socket) socket.close(); }catch(e){} stopRestFallback(); });
+// WebSocket
+const ws=new WebSocket('wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade');
+ws.onmessage=(m)=>{
+  const p=JSON.parse(m.data);
+  const s=p.stream.startsWith('btcusdt')?'BTC':'ETH';
+  const price=parseFloat(p.data.p);
+  if(s==='BTC'){prevBTC=lastBTC;lastBTC=price;} else{prevETH=lastETH;lastETH=price;}
+  push(s,price);
+};
 </script>
 </body>
 </html>
