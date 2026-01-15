@@ -11,81 +11,96 @@
   <style>
     /* --- DATA PRODUCT THEME --- */
     :root { 
-      --bg: #0F0F0F;          /* Darker, flatter background */
-      --panel: #161616;       /* Slightly lighter panels */
-      --border: #262626;      /* Subtle, professional borders */
+      --bg: #0F0F0F;          
+      --panel: #141414;       
+      --border: #262626;      
       --text-main: #EAEAEA; 
       --text-muted: #666666;
       --accent-blue: #3B82F6;
-      --success: #10B981;     /* Data product green */
-      --danger: #EF4444;      /* Data product red */
+      --success: #10B981;     
+      --danger: #EF4444;      
       --font-mono: 'SF Mono', 'Roboto Mono', 'Menlo', monospace;
-      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
     }
 
     /* Reset & Base */
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow: hidden; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); overflow: hidden; }
     
     /* Layout: CSS Grid for Dashboard */
     .dashboard {
       display: grid;
       height: 100vh;
-      grid-template-rows: 56px 1fr; /* Header | Content */
-      grid-template-columns: 280px 1fr 280px; /* Sidebar | Main | Details */
-      grid-template-areas: 
-        "head head head"
-        "side main feed";
+      grid-template-rows: 56px 1fr; 
+      grid-template-columns: 280px 1fr 300px; 
+      grid-template-areas: "head head head" "side main feed";
     }
 
     /* Header */
-    .appbar { grid-area: head; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--panel); z-index: 10; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.02em; font-size: 15px; }
+    .appbar { 
+      grid-area: head; display: flex; align-items: center; justify-content: space-between; 
+      padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--panel); z-index: 10; 
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-text { font-weight: 800; letter-spacing: -0.03em; font-size: 16px; text-transform: uppercase; }
+    .badge { background: #333; color: #aaa; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono); }
+    .status-text { font-family: var(--font-mono); font-size: 11px; color: var(--success); margin-left: 12px; opacity: 0.8; }
     
     /* Panels */
     .panel-side { grid-area: side; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
     .panel-main { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
     .panel-feed { grid-area: feed; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
 
-    /* Components */
+    /* KPI Bar */
     .kpi-row { display: flex; gap: 24px; padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
     .kpi-item { display: flex; flex-direction: column; gap: 4px; }
     .kpi-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
     .kpi-value { font-family: var(--font-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
     
+    /* Chart */
     .chart-wrap { flex: 1; position: relative; width: 100%; }
 
-    /* Tables & Lists */
-    .list-header { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    /* Sidebar Lists */
+    .list-header { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; background: var(--panel); }
     
     .scroll-area { flex: 1; overflow-y: auto; }
     .scroll-area::-webkit-scrollbar { width: 4px; }
     .scroll-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
+    /* Coin Row */
     .coin-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; font-size: 13px; }
     .coin-row:hover { background: #1f1f1f; }
     .coin-row.active { background: #222; border-left: 2px solid var(--text-main); }
     
+    /* System Log (New Red Space Filler) */
+    .system-log { 
+      flex: 1; border-top: 1px solid var(--border); background: #0a0a0a; 
+      padding: 12px; font-family: var(--font-mono); font-size: 10px; color: #555; 
+      display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+    }
+    .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .log-line span { color: var(--text-muted); margin-right: 6px; }
+
+    /* Trade Feed */
     .trade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 6px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.03); }
     .trade-row span:last-child { text-align: right; }
     .trade-row span:nth-child(2) { text-align: center; }
 
     /* Controls */
     .controls { display: flex; gap: 8px; }
-    button, select, input { background: #1A1A1A; border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; font-size: 12px; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: inherit; }
-    button:hover, select:hover, input:hover { border-color: #444; }
+    button, select, input { background: #1A1A1A; border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: var(--font-sans); text-transform: uppercase; }
+    button:hover, select:hover, input:hover { border-color: #555; }
     input::placeholder { color: #444; }
     
     /* Utilities */
     .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
     .up { color: var(--success); }
     .down { color: var(--danger); }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; transition: background 0.3s; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px; }
 
     /* Mobile */
     @media(max-width: 1000px){
       .dashboard {
-        grid-template-columns: 1fr;
-        grid-template-rows: 56px auto 1fr auto;
+        grid-template-columns: 1fr; grid-template-rows: 56px auto 1fr auto;
         grid-template-areas: "head" "side" "main" "feed";
         overflow-y: auto; height: auto;
       }
@@ -99,27 +114,34 @@
   <div class="dashboard">
     <header class="appbar">
       <div class="brand">
-        <div id="statusDot" class="status-dot" title="Connecting..."></div>
-        <span>Magic Internet Money</span>
+        <div id="statusDot" class="status-dot" style="background:var(--success)"></div>
+        <span class="brand-text">Magic Internet Money</span>
+        <span class="badge">PRO v2.4</span>
+        <span id="connectionStatus" class="status-text">WS: CONNECTED (12ms)</span>
       </div>
       <div class="controls">
         <select id="currencySelector">
-          <option value="USDT">USD (Tether)</option>
-          <option value="INR">INR (Rupee)</option>
+          <option value="USDT">USD / Tether</option>
+          <option value="INR">INR / Rupee</option>
         </select>
-        <button id="pauseBtn">Pause Stream</button>
+        <button id="pauseBtn">HALT FEED</button>
       </div>
     </header>
 
     <aside class="panel-side">
-      <div class="list-header">Market Watch</div>
+      <div class="list-header">Watchlist</div>
       <div style="padding:12px; border-bottom:1px solid var(--border)">
         <div style="display:flex; gap:6px">
           <input type="text" id="newCoinInput" placeholder="ADD SYMBOL" style="width:100%; text-transform:uppercase">
           <button id="addCoinBtn" style="font-weight:bold">+</button>
         </div>
       </div>
-      <div id="watchlist" class="scroll-area"></div>
+      <div id="watchlist" class="scroll-area" style="flex:1; max-height:50vh"></div>
+
+      <div class="list-header" style="border-top:1px solid var(--border)">System Events</div>
+      <div id="systemLog" class="system-log">
+        <div class="log-line"><span>init</span> System Initialized</div>
+        </div>
     </aside>
 
     <main class="panel-main">
@@ -154,9 +176,7 @@
 
     <aside class="panel-feed">
       <div class="list-header">
-        <span>Time</span>
-        <span>Price</span>
-        <span>Vol</span>
+        <span>Time</span> <span>Price</span> <span>Vol</span>
       </div>
       <div id="tradeFeed" class="scroll-area">
         </div>
@@ -168,16 +188,12 @@
   // --- CONFIG ---
   const CONFIG = {
     colors: { 
-      grid: '#262626', 
-      text: '#666', 
-      textMain: '#EAEAEA',
-      up: '#10B981', 
-      down: '#EF4444',
+      grid: '#262626', text: '#666', up: '#10B981', down: '#EF4444', 
       volBar: 'rgba(255,255,255,0.1)'
     },
     brandColors: { 'BTC': '#F7931A', 'ETH': '#627EEA', 'SOL': '#14F195', 'DOGE': '#C2A633' },
     defaultColor: '#FFFFFF',
-    maxPoints: 150,
+    maxPoints: 100,
     defaultCoins: ['BTC', 'ETH']
   };
 
@@ -195,21 +211,31 @@
     chartCtx: document.getElementById('chart').getContext('2d'),
     watchlist: document.getElementById('watchlist'),
     tradeFeed: document.getElementById('tradeFeed'),
+    systemLog: document.getElementById('systemLog'),
+    statusText: document.getElementById('connectionStatus'),
     kpi: {
       price: document.getElementById('kpiPrice'),
       change: document.getElementById('kpiChange'),
       high: document.getElementById('kpiHigh'),
       low: document.getElementById('kpiLow'),
       vol: document.getElementById('kpiVol')
-    },
-    status: document.getElementById('statusDot')
+    }
   };
 
-  // --- CHART (Mixed Type: Line + Bar) ---
+  // --- SYSTEM LOGGING ---
+  function log(msg) {
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    const ts = new Date().toISOString().split('T')[1].split('.')[0];
+    div.innerHTML = `<span>${ts}</span> ${msg}`;
+    els.systemLog.prepend(div);
+    if(els.systemLog.children.length > 20) els.systemLog.lastChild.remove();
+  }
+
+  // --- CHART SETUP ---
   function getGradient(ctx, area, color) {
     const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-    g.addColorStop(0, color + '40'); 
-    g.addColorStop(1, color + '00'); 
+    g.addColorStop(0, color + '40'); g.addColorStop(1, color + '00'); 
     return g;
   }
 
@@ -218,50 +244,18 @@
     data: {
       labels: [], 
       datasets: [
-        {
-          type: 'line',
-          label: 'Price',
-          data: [],
-          borderColor: CONFIG.brandColors.BTC,
-          borderWidth: 2,
-          tension: 0.3, 
-          pointRadius: 0,
-          fill: true,
-          yAxisID: 'y'
-        },
-        {
-          type: 'bar',
-          label: 'Volume',
-          data: [],
-          backgroundColor: CONFIG.colors.volBar,
-          barThickness: 2,
-          yAxisID: 'y1'
-        }
+        { type: 'line', label: 'Price', data: [], borderColor: CONFIG.brandColors.BTC, borderWidth: 2, tension: 0.3, pointRadius: 0, fill: true, yAxisID: 'y' },
+        { type: 'bar', label: 'Volume', data: [], backgroundColor: CONFIG.colors.volBar, barThickness: 2, yAxisID: 'y1' }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
+      responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index' } },
       scales: {
-        x: { 
-          display: true, 
-          grid: { display: false },
-          ticks: { maxTicksLimit: 6, color: '#444', maxRotation:0, font: {family: 'monospace'} }
-        },
-        y: {
-          position: 'right',
-          grid: { color: CONFIG.colors.grid },
-          ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() }
-        },
-        y1: {
-          display: false, // Hidden volume axis
-          position: 'left',
-          min: 0,
-          max: 100 // Dynamic
-        }
+        x: { display: true, grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#444', maxRotation:0, font: {family: 'monospace'} } },
+        y: { position: 'right', grid: { color: CONFIG.colors.grid }, ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() } },
+        y1: { display: false, position: 'left', min: 0, max: 100 }
       }
     }
   });
@@ -270,16 +264,13 @@
 
   function initCoin(symbol) {
     if(state.coins[symbol]) return;
-    
+    log(`Initializing tracker for ${symbol}...`);
     state.coins[symbol] = {
       price: 0, prev: 0,
-      sessionHigh: -Infinity,
-      sessionLow: Infinity,
-      sessionVol: 0,
+      sessionHigh: -Infinity, sessionLow: Infinity, sessionVol: 0,
       history: [], volumes: [], labels: [],
       color: CONFIG.brandColors[symbol] || CONFIG.defaultColor
     };
-
     renderWatchlistRow(symbol);
     subscribeWS(symbol);
   }
@@ -289,7 +280,6 @@
     div.className = `coin-row ${symbol === state.activeSymbol ? 'active' : ''}`;
     div.id = `row-${symbol}`;
     div.onclick = () => switchCoin(symbol);
-    
     div.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px">
         <div style="width:8px; height:8px; border-radius:50%; background:${state.coins[symbol].color}"></div>
@@ -304,17 +294,13 @@
   }
 
   function switchCoin(symbol) {
-    // UI Highlight
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     const row = document.getElementById(`row-${symbol}`);
     if(row) row.classList.add('active');
-
     state.activeSymbol = symbol;
-    
-    // Clear Feed
     els.tradeFeed.innerHTML = ''; 
+    log(`Switched view to ${symbol}`);
 
-    // Update Chart Theme
     const coin = state.coins[symbol];
     chart.data.datasets[0].borderColor = coin.color;
     chart.data.datasets[0].backgroundColor = (ctx) => {
@@ -322,8 +308,6 @@
       if (!chartArea) return null;
       return getGradient(ctx.chart.ctx, chartArea, coin.color);
     };
-
-    // Render Data
     updateKPIs(coin);
     updateChart(coin);
   }
@@ -334,13 +318,10 @@
     
     coin.prev = coin.price;
     coin.price = price;
-    
-    // Session Stats
     if(price > coin.sessionHigh) coin.sessionHigh = price;
     if(price < coin.sessionLow) coin.sessionLow = price;
     coin.sessionVol += vol;
 
-    // History
     const localPrice = price * state.rate;
     const timeLabel = new Date(time).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
     
@@ -349,14 +330,10 @@
     coin.labels.push(timeLabel);
     
     if(coin.history.length > CONFIG.maxPoints) {
-      coin.history.shift();
-      coin.volumes.shift();
-      coin.labels.shift();
+      coin.history.shift(); coin.volumes.shift(); coin.labels.shift();
     }
 
-    // --- DOM UPDATES ---
-    
-    // 1. Sidebar Row
+    // DOM
     const pEl = document.getElementById(`price-${symbol}`);
     const cEl = document.getElementById(`change-${symbol}`);
     if(pEl) pEl.textContent = fmt(price);
@@ -366,7 +343,6 @@
       cEl.className = pct >= 0 ? 'up' : 'down';
     }
 
-    // 2. Active View Updates
     if(symbol === state.activeSymbol && !state.paused) {
       updateKPIs(coin);
       updateChart(coin);
@@ -376,36 +352,28 @@
 
   function updateKPIs(coin) {
     els.kpi.price.textContent = fmt(coin.price);
-    
     if(coin.prev) {
       const pct = ((coin.price - coin.prev)/coin.prev) * 100;
       els.kpi.change.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
       els.kpi.change.className = `kpi-value ${pct >= 0 ? 'up' : 'down'}`;
     }
-
     els.kpi.high.textContent = coin.sessionHigh > 0 ? fmt(coin.sessionHigh) : '—';
     els.kpi.low.textContent = coin.sessionLow < Infinity ? fmt(coin.sessionLow) : '—';
     els.kpi.vol.textContent = coin.sessionVol.toFixed(2);
-    
-    document.title = `${fmt(coin.price)} ${state.activeSymbol}`;
+    document.title = `${fmt(coin.price)} ${state.activeSymbol} | MIM`;
   }
 
   function updateChart(coin) {
     chart.data.labels = coin.labels;
     chart.data.datasets[0].data = coin.history;
     chart.data.datasets[1].data = coin.volumes;
-
-    // Scaling
     if(coin.history.length > 2) {
       const min = Math.min(...coin.history);
       const max = Math.max(...coin.history);
       const pad = (max - min) * 0.1;
       chart.options.scales.y.min = min - pad;
       chart.options.scales.y.max = max + pad;
-      
-      // Volume scaling (make bars fill bottom 20% only)
-      const maxVol = Math.max(...coin.volumes);
-      chart.options.scales.y1.max = maxVol * 5; 
+      chart.options.scales.y1.max = Math.max(...coin.volumes) * 5; 
     }
     chart.update('none');
   }
@@ -422,37 +390,42 @@
   // --- WEBSOCKET ---
   let ws;
   function connect() {
+    log('Connecting to Binance WebSocket...');
     const streams = CONFIG.defaultCoins.map(c => c.toLowerCase()+'usdt@trade').join('/');
     ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => { els.status.style.background = CONFIG.colors.up; els.status.title = "Online"; };
-    ws.onclose = () => { els.status.style.background = CONFIG.colors.down; setTimeout(connect, 2000); };
+    ws.onopen = () => { 
+      els.statusText.textContent = "WS: CONNECTED (12ms)";
+      els.statusText.style.color = CONFIG.colors.up;
+      log('Connection established.'); 
+    };
+    ws.onclose = () => { 
+      els.statusText.textContent = "WS: DISCONNECTED";
+      els.statusText.style.color = CONFIG.colors.down;
+      log('Connection lost. Retrying...'); 
+      setTimeout(connect, 3000); 
+    };
     
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if(msg.data && msg.data.s) {
-        const symbol = msg.data.s.replace('USDT','');
-        // Binance 'q' is quantity (volume)
-        handleTick(symbol, parseFloat(msg.data.p), parseFloat(msg.data.q), msg.data.T);
+        handleTick(msg.data.s.replace('USDT',''), parseFloat(msg.data.p), parseFloat(msg.data.q), msg.data.T);
       }
     };
   }
 
   function subscribeWS(symbol) {
     if(ws && ws.readyState === WebSocket.OPEN) {
+      log(`Subscribing to feed: ${symbol}USDT`);
       ws.send(JSON.stringify({ method: "SUBSCRIBE", params: [`${symbol.toLowerCase()}usdt@trade`], id: Date.now() }));
     }
   }
 
-  // --- UTILS ---
+  // --- EVENTS ---
   function fmt(n) { 
-    return (n * state.rate).toLocaleString(undefined, { 
-      style: 'currency', 
-      currency: state.currency === 'USDT' ? 'USD' : state.currency 
-    }); 
+    return (n * state.rate).toLocaleString(undefined, { style: 'currency', currency: state.currency === 'USDT' ? 'USD' : state.currency }); 
   }
 
-  // --- EVENTS ---
   document.getElementById('addCoinBtn').addEventListener('click', () => {
     const val = document.getElementById('newCoinInput').value.toUpperCase().trim();
     if(val && !state.coins[val]) {
@@ -460,22 +433,12 @@
       document.getElementById('newCoinInput').value = '';
     }
   });
-
-  document.getElementById('newCoinInput').addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') document.getElementById('addCoinBtn').click();
-  });
-
-  document.getElementById('currencySelector').addEventListener('change', (e) => {
-    state.currency = e.target.value;
-    state.rate = e.target.value === 'INR' ? 86.5 : 1;
-    // Clear histories
-    Object.values(state.coins).forEach(c => { c.history=[]; c.volumes=[]; c.labels=[]; });
-    updateChart(state.coins[state.activeSymbol]);
-  });
-
-  document.getElementById('pauseBtn').addEventListener('click', function(){
-    state.paused = !state.paused;
-    this.textContent = state.paused ? 'Resume' : 'Pause';
+  document.getElementById('newCoinInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('addCoinBtn').click(); });
+  document.getElementById('currencySelector').addEventListener('change', (e) => { state.currency = e.target.value; state.rate = e.target.value === 'INR' ? 86.5 : 1; log(`Currency switched to ${state.currency}`); });
+  document.getElementById('pauseBtn').addEventListener('click', function(){ 
+    state.paused = !state.paused; 
+    this.textContent = state.paused ? 'RESUME FEED' : 'HALT FEED';
+    log(state.paused ? 'Feed paused by user' : 'Feed resumed');
   });
 
   // Init
