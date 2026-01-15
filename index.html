@@ -9,104 +9,90 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    /* --- DATA PRODUCT THEME --- */
+    /* --- TERMINAL THEME --- */
     :root { 
-      --bg: #0F0F0F;          
+      --bg: #0b0b0b;          
       --panel: #141414;       
-      --border: #262626;      
-      --text-main: #EAEAEA; 
-      --text-muted: #666666;
-      --accent-blue: #3B82F6;
-      --success: #10B981;     
-      --danger: #EF4444;      
-      --font-mono: 'SF Mono', 'Roboto Mono', 'Menlo', monospace;
-      --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+      --border: #222;      
+      --text-main: #e0e0e0; 
+      --text-muted: #666;
+      --success: #0ecb81;     
+      --danger: #f6465d;      
+      --font-mono: 'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace;
+      --font-sans: 'Inter', system-ui, sans-serif;
     }
 
-    /* Reset & Base */
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); overflow: hidden; }
     
-    /* Layout: CSS Grid for Dashboard */
+    /* Grid Layout */
     .dashboard {
       display: grid;
       height: 100vh;
-      grid-template-rows: 56px 1fr; 
-      grid-template-columns: 280px 1fr 300px; 
+      grid-template-rows: 50px 1fr; 
+      grid-template-columns: 260px 1fr 280px; 
       grid-template-areas: "head head head" "side main feed";
     }
 
     /* Header */
     .appbar { 
       grid-area: head; display: flex; align-items: center; justify-content: space-between; 
-      padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--panel); z-index: 10; 
+      padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--panel); 
     }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-text { font-weight: 800; letter-spacing: -0.03em; font-size: 16px; text-transform: uppercase; }
-    .badge { background: #333; color: #aaa; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono); }
-    .status-text { font-family: var(--font-mono); font-size: 11px; color: var(--success); margin-left: 12px; opacity: 0.8; }
-    
+    .brand { font-weight: 800; letter-spacing: -0.5px; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+    .status-badge { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-family: var(--font-mono); color: var(--success); border: 1px solid #333; }
+
     /* Panels */
     .panel-side { grid-area: side; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
     .panel-main { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
     .panel-feed { grid-area: feed; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
 
-    /* KPI Bar */
-    .kpi-row { display: flex; gap: 24px; padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
-    .kpi-item { display: flex; flex-direction: column; gap: 4px; }
-    .kpi-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
-    .kpi-value { font-family: var(--font-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
-    
-    /* Chart */
-    .chart-wrap { flex: 1; position: relative; width: 100%; }
+    /* Chart Area */
+    .chart-wrap { flex: 1; position: relative; width: 100%; background: #0b0b0b; }
 
     /* Sidebar Lists */
-    .list-header { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; background: var(--panel); }
+    .section-title { 
+      padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-muted); 
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); 
+      background: var(--panel); display: flex; justify-content: space-between;
+    }
     
     .scroll-area { flex: 1; overflow-y: auto; }
-    .scroll-area::-webkit-scrollbar { width: 4px; }
-    .scroll-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .scroll-area::-webkit-scrollbar { width: 0px; } /* Clean scroll */
 
     /* Coin Row */
-    .coin-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; font-size: 13px; }
-    .coin-row:hover { background: #1f1f1f; }
-    .coin-row.active { background: #222; border-left: 2px solid var(--text-main); }
-    
-    /* System Log (New Red Space Filler) */
-    .system-log { 
-      flex: 1; border-top: 1px solid var(--border); background: #0a0a0a; 
-      padding: 12px; font-family: var(--font-mono); font-size: 10px; color: #555; 
-      display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+    .coin-row { 
+      display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; 
+      padding: 10px 16px; border-bottom: 1px solid var(--border); 
+      cursor: pointer; transition: 0.2s; align-items: center; 
     }
-    .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .log-line span { color: var(--text-muted); margin-right: 6px; }
+    .coin-row:hover { background: #181818; }
+    .coin-row.active { background: #1e1e1e; border-left: 2px solid #fff; }
+    
+    .row-icon { width: 20px; height: 20px; border-radius: 50%; }
+    .row-info { display: flex; flex-direction: column; }
+    .row-sym { font-weight: 700; font-size: 13px; }
+    .row-name { font-size: 10px; color: var(--text-muted); }
+    .row-price { font-family: var(--font-mono); font-size: 12px; text-align: right; }
+    .row-change { font-size: 10px; text-align: right; }
+
+    /* KPI Header */
+    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); }
+    .kpi-box { padding: 16px 24px; border-right: 1px solid var(--border); }
+    .kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
+    .kpi-val { font-family: var(--font-mono); font-size: 16px; font-weight: 500; }
+    .kpi-lg { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
 
     /* Trade Feed */
-    .trade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 6px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .trade-row span:last-child { text-align: right; }
-    .trade-row span:nth-child(2) { text-align: center; }
-
-    /* Controls */
-    .controls { display: flex; gap: 8px; }
-    button, select, input { background: #1A1A1A; border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: var(--font-sans); text-transform: uppercase; }
-    button:hover, select:hover, input:hover { border-color: #555; }
-    input::placeholder { color: #444; }
+    .trade-row { display: grid; grid-template-columns: 60px 1fr 60px; padding: 4px 16px; font-family: var(--font-mono); font-size: 10px; color: #555; border-bottom: 1px solid #1a1a1a; }
     
-    /* Utilities */
-    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    /* Utils */
     .up { color: var(--success); }
     .down { color: var(--danger); }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #444; display: inline-block; margin-right: 6px; }
+    button { background: #222; border: 1px solid #333; color: #ccc; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; text-transform: uppercase; font-weight: 600; }
+    button:hover { border-color: #666; color: #fff; }
+    input { background: transparent; border: none; color: #fff; font-size: 11px; outline: none; text-transform: uppercase; width: 100%; }
 
-    /* Mobile */
-    @media(max-width: 1000px){
-      .dashboard {
-        grid-template-columns: 1fr; grid-template-rows: 56px auto 1fr auto;
-        grid-template-areas: "head" "side" "main" "feed";
-        overflow-y: auto; height: auto;
-      }
-      .panel-side, .panel-feed { height: 300px; border: none; border-bottom: 1px solid var(--border); }
-      .chart-wrap { min-height: 400px; }
-    }
+    @media(max-width: 900px){ .dashboard { display: flex; flex-direction: column; overflow-y: auto; height: auto; } .chart-wrap { min-height: 350px; } }
   </style>
 </head>
 <body>
@@ -114,336 +100,287 @@
   <div class="dashboard">
     <header class="appbar">
       <div class="brand">
-        <div id="statusDot" class="status-dot" style="background:var(--success)"></div>
-        <span class="brand-text">Magic Internet Money</span>
-        <span class="badge">PRO v2.4</span>
-        <span id="connectionStatus" class="status-text">WS: CONNECTED (12ms)</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#f7931a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <span>Magic Internet Money</span>
+        <span class="status-badge">LIVE</span>
       </div>
-      <div class="controls">
-        <select id="currencySelector">
-          <option value="USDT">USD / Tether</option>
-          <option value="INR">INR / Rupee</option>
+      <div style="display:flex; gap:10px">
+        <select id="currencySelector" style="background:#111; color:#fff; border:1px solid #333; font-size:11px; padding:4px;">
+          <option value="USDT">USD</option>
+          <option value="INR">INR</option>
         </select>
-        <button id="pauseBtn">HALT FEED</button>
       </div>
     </header>
 
     <aside class="panel-side">
-      <div class="list-header">Watchlist</div>
-      <div style="padding:12px; border-bottom:1px solid var(--border)">
-        <div style="display:flex; gap:6px">
-          <input type="text" id="newCoinInput" placeholder="ADD SYMBOL" style="width:100%; text-transform:uppercase">
-          <button id="addCoinBtn" style="font-weight:bold">+</button>
-        </div>
+      <div class="section-title">
+        <span>Active Tracker</span>
+        <button id="addBtn">+</button>
       </div>
-      <div id="watchlist" class="scroll-area" style="flex:1; max-height:50vh"></div>
+      <div style="padding:8px 16px; border-bottom:1px solid var(--border); display:none" id="inputPanel">
+        <input id="inputCoin" placeholder="Type Symbol & Enter..." />
+      </div>
+      <div id="watchlist" class="scroll-area" style="max-height: 40%"></div>
 
-      <div class="list-header" style="border-top:1px solid var(--border)">System Events</div>
-      <div id="systemLog" class="system-log">
-        <div class="log-line"><span>init</span> System Initialized</div>
+      <div class="section-title" style="border-top:1px solid var(--border)">
+        Trending / Popular
+      </div>
+      <div id="popularList" class="scroll-area" style="background: #0e0e0e;">
         </div>
     </aside>
 
     <main class="panel-main">
-      <div class="kpi-row">
-        <div class="kpi-item">
-          <div class="kpi-label">Last Price</div>
-          <div id="kpiPrice" class="kpi-value" style="font-size:24px; font-weight:700">Loading...</div>
+      <div class="kpi-bar">
+        <div class="kpi-box">
+          <div class="kpi-label">Current Price</div>
+          <div id="kpiPrice" class="kpi-val kpi-lg">Loading...</div>
         </div>
-        <div class="kpi-item">
+        <div class="kpi-box">
           <div class="kpi-label">24h Change</div>
-          <div id="kpiChange" class="kpi-value">—</div>
+          <div id="kpiChange" class="kpi-val">—</div>
         </div>
-        <div style="width:1px; background:var(--border); margin:0 8px"></div>
-        <div class="kpi-item">
-          <div class="kpi-label">Session High</div>
-          <div id="kpiHigh" class="kpi-value mono">—</div>
+        <div class="kpi-box">
+          <div class="kpi-label">Day High</div>
+          <div id="kpiHigh" class="kpi-val">—</div>
         </div>
-        <div class="kpi-item">
-          <div class="kpi-label">Session Low</div>
-          <div id="kpiLow" class="kpi-value mono">—</div>
-        </div>
-        <div class="kpi-item">
-          <div class="kpi-label">Volume</div>
-          <div id="kpiVol" class="kpi-value mono" style="color:var(--text-muted)">—</div>
+        <div class="kpi-box">
+          <div class="kpi-label">Volume (24h)</div>
+          <div id="kpiVol" class="kpi-val">—</div>
         </div>
       </div>
-
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
     </main>
 
     <aside class="panel-feed">
-      <div class="list-header">
-        <span>Time</span> <span>Price</span> <span>Vol</span>
-      </div>
-      <div id="tradeFeed" class="scroll-area">
-        </div>
+      <div class="section-title">Live Executions</div>
+      <div id="tradeFeed" class="scroll-area"></div>
     </aside>
   </div>
 
 <script>
 (function(){
-  // --- CONFIG ---
   const CONFIG = {
-    colors: { 
-      grid: '#262626', text: '#666', up: '#10B981', down: '#EF4444', 
-      volBar: 'rgba(255,255,255,0.1)'
-    },
-    brandColors: { 'BTC': '#F7931A', 'ETH': '#627EEA', 'SOL': '#14F195', 'DOGE': '#C2A633' },
-    defaultColor: '#FFFFFF',
-    maxPoints: 100,
-    defaultCoins: ['BTC', 'ETH']
+    // Top list is user controlled
+    defaultCoins: ['BTC', 'ETH'],
+    // Bottom list (Red Box) is fixed popular coins
+    popularCoins: ['SOL', 'XRP', 'BNB', 'DOGE', 'ADA', 'AVAX', 'DOT'],
+    colors: { up: '#0ecb81', down: '#f6465d', line: '#555' }
   };
 
-  // --- STATE ---
   let state = {
-    activeSymbol: 'BTC',
+    active: 'BTC',
     currency: 'USDT',
     rate: 1,
-    paused: false,
     coins: {} 
   };
 
   // --- UI REFS ---
   const els = {
-    chartCtx: document.getElementById('chart').getContext('2d'),
+    chart: document.getElementById('chart').getContext('2d'),
     watchlist: document.getElementById('watchlist'),
-    tradeFeed: document.getElementById('tradeFeed'),
-    systemLog: document.getElementById('systemLog'),
-    statusText: document.getElementById('connectionStatus'),
-    kpi: {
-      price: document.getElementById('kpiPrice'),
-      change: document.getElementById('kpiChange'),
-      high: document.getElementById('kpiHigh'),
-      low: document.getElementById('kpiLow'),
-      vol: document.getElementById('kpiVol')
-    }
+    popularList: document.getElementById('popularList'),
+    feed: document.getElementById('tradeFeed'),
+    kpi: { p: document.getElementById('kpiPrice'), c: document.getElementById('kpiChange'), h: document.getElementById('kpiHigh'), v: document.getElementById('kpiVol') }
   };
 
-  // --- SYSTEM LOGGING ---
-  function log(msg) {
-    const div = document.createElement('div');
-    div.className = 'log-line';
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    div.innerHTML = `<span>${ts}</span> ${msg}`;
-    els.systemLog.prepend(div);
-    if(els.systemLog.children.length > 20) els.systemLog.lastChild.remove();
-  }
-
-  // --- CHART SETUP ---
-  function getGradient(ctx, area, color) {
-    const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-    g.addColorStop(0, color + '40'); g.addColorStop(1, color + '00'); 
-    return g;
-  }
-
-  const chart = new Chart(els.chartCtx, {
+  // --- SMOOTH CHART ---
+  // We enable animation (duration 300ms) and tension (0.4) for smoothness
+  const chart = new Chart(els.chart, {
     type: 'line',
     data: {
-      labels: [], 
-      datasets: [
-        { type: 'line', label: 'Price', data: [], borderColor: CONFIG.brandColors.BTC, borderWidth: 2, tension: 0.3, pointRadius: 0, fill: true, yAxisID: 'y' },
-        { type: 'bar', label: 'Volume', data: [], backgroundColor: CONFIG.colors.volBar, barThickness: 2, yAxisID: 'y1' }
-      ]
+      labels: [],
+      datasets: [{
+        data: [],
+        borderColor: '#f7931a',
+        borderWidth: 2,
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+          g.addColorStop(0, 'rgba(247, 147, 26, 0.2)');
+          g.addColorStop(1, 'rgba(247, 147, 26, 0.0)');
+          return g;
+        },
+        fill: true,
+        tension: 0.4, // Smooths the curve
+        pointRadius: 0
+      }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index' } },
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 300, easing: 'easeOutQuart' }, // Smooth glide
       scales: {
-        x: { display: true, grid: { display: false }, ticks: { maxTicksLimit: 6, color: '#444', maxRotation:0, font: {family: 'monospace'} } },
-        y: { position: 'right', grid: { color: CONFIG.colors.grid }, ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() } },
-        y1: { display: false, position: 'left', min: 0, max: 100 }
-      }
+        x: { display: false },
+        y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#666' } }
+      },
+      plugins: { legend: { display: false } },
+      interaction: { intersect: false, mode: 'index' }
     }
   });
 
   // --- LOGIC ---
-
-  function initCoin(symbol) {
-    if(state.coins[symbol]) return;
-    log(`Initializing tracker for ${symbol}...`);
-    state.coins[symbol] = {
-      price: 0, prev: 0,
-      sessionHigh: -Infinity, sessionLow: Infinity, sessionVol: 0,
-      history: [], volumes: [], labels: [],
-      color: CONFIG.brandColors[symbol] || CONFIG.defaultColor
+  function initCoin(sym, isPopular = false) {
+    if(state.coins[sym]) return;
+    state.coins[sym] = { 
+      price: 0, prev: 0, 
+      high: -Infinity, vol: 0,
+      history: [], labels: [],
+      isPopular: isPopular 
     };
-    renderWatchlistRow(symbol);
-    subscribeWS(symbol);
+    renderRow(sym, isPopular);
+    subscribe(sym);
   }
 
-  function renderWatchlistRow(symbol) {
+  function renderRow(sym, isPopular) {
+    const container = isPopular ? els.popularList : els.watchlist;
     const div = document.createElement('div');
-    div.className = `coin-row ${symbol === state.activeSymbol ? 'active' : ''}`;
-    div.id = `row-${symbol}`;
-    div.onclick = () => switchCoin(symbol);
+    div.className = `coin-row ${sym === state.active ? 'active' : ''}`;
+    div.id = `row-${sym}`;
+    div.onclick = () => switchCoin(sym);
+
+    // Icon
+    const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${sym.toLowerCase()}.svg`;
+    
     div.innerHTML = `
-      <div style="display:flex; align-items:center; gap:10px">
-        <div style="width:8px; height:8px; border-radius:50%; background:${state.coins[symbol].color}"></div>
-        <div style="font-weight:600">${symbol}</div>
+      <img src="${icon}" class="row-icon" onerror="this.src='https://via.placeholder.com/20'">
+      <div class="row-info">
+        <span class="row-sym">${sym}</span>
+        <span class="row-name">USDT</span>
       </div>
-      <div class="mono">
-        <div id="price-${symbol}">--</div>
-        <div id="change-${symbol}" style="font-size:10px; text-align:right; opacity:0.7">--</div>
+      <div class="row-info">
+        <span class="row-price" id="p-${sym}">—</span>
+        <span class="row-change" id="c-${sym}">—</span>
       </div>
     `;
-    els.watchlist.appendChild(div);
+    container.appendChild(div);
   }
 
-  function switchCoin(symbol) {
-    document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
-    const row = document.getElementById(`row-${symbol}`);
-    if(row) row.classList.add('active');
-    state.activeSymbol = symbol;
-    els.tradeFeed.innerHTML = ''; 
-    log(`Switched view to ${symbol}`);
-
-    const coin = state.coins[symbol];
-    chart.data.datasets[0].borderColor = coin.color;
-    chart.data.datasets[0].backgroundColor = (ctx) => {
-      const {chartArea} = ctx.chart;
-      if (!chartArea) return null;
-      return getGradient(ctx.chart.ctx, chartArea, coin.color);
-    };
-    updateKPIs(coin);
-    updateChart(coin);
-  }
-
-  function handleTick(symbol, price, vol, time) {
-    if(!state.coins[symbol]) return;
-    const coin = state.coins[symbol];
-    
+  function handleTick(sym, price, vol) {
+    if(!state.coins[sym]) return;
+    const coin = state.coins[sym];
     coin.prev = coin.price;
     coin.price = price;
-    if(price > coin.sessionHigh) coin.sessionHigh = price;
-    if(price < coin.sessionLow) coin.sessionLow = price;
-    coin.sessionVol += vol;
+    if(price > coin.high) coin.high = price;
+    coin.vol += vol;
 
-    const localPrice = price * state.rate;
-    const timeLabel = new Date(time).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
-    
-    coin.history.push(localPrice);
-    coin.volumes.push(vol);
-    coin.labels.push(timeLabel);
-    
-    if(coin.history.length > CONFIG.maxPoints) {
-      coin.history.shift(); coin.volumes.shift(); coin.labels.shift();
-    }
-
-    // DOM
-    const pEl = document.getElementById(`price-${symbol}`);
-    const cEl = document.getElementById(`change-${symbol}`);
-    if(pEl) pEl.textContent = fmt(price);
-    if(cEl && coin.prev) {
-      const pct = ((price - coin.prev)/coin.prev) * 100;
-      cEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      cEl.className = pct >= 0 ? 'up' : 'down';
-    }
-
-    if(symbol === state.activeSymbol && !state.paused) {
-      updateKPIs(coin);
+    // History (only keep for active coin to save memory, or all if we want sparklines later)
+    if(sym === state.active) {
+      coin.history.push(price);
+      if(coin.history.length > 100) coin.history.shift();
       updateChart(coin);
-      addTradeRow(price, vol, time);
+      updateKPI(coin);
+    }
+
+    // UI Update
+    const pEl = document.getElementById(`p-${sym}`);
+    const cEl = document.getElementById(`c-${sym}`);
+    if(pEl) {
+      pEl.textContent = fmt(price);
+      pEl.style.color = price >= coin.prev ? CONFIG.colors.up : CONFIG.colors.down;
+    }
+    if(cEl && coin.prev) {
+      const pct = ((price - coin.prev)/coin.prev)*100;
+      cEl.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
+      cEl.className = `row-change ${pct>=0?'up':'down'}`;
     }
   }
 
-  function updateKPIs(coin) {
-    els.kpi.price.textContent = fmt(coin.price);
-    if(coin.prev) {
-      const pct = ((coin.price - coin.prev)/coin.prev) * 100;
-      els.kpi.change.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      els.kpi.change.className = `kpi-value ${pct >= 0 ? 'up' : 'down'}`;
-    }
-    els.kpi.high.textContent = coin.sessionHigh > 0 ? fmt(coin.sessionHigh) : '—';
-    els.kpi.low.textContent = coin.sessionLow < Infinity ? fmt(coin.sessionLow) : '—';
-    els.kpi.vol.textContent = coin.sessionVol.toFixed(2);
-    document.title = `${fmt(coin.price)} ${state.activeSymbol} | MIM`;
+  function switchCoin(sym) {
+    document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
+    const r = document.getElementById(`row-${sym}`);
+    if(r) r.classList.add('active');
+    
+    state.active = sym;
+    els.feed.innerHTML = ''; // clear feed
+    
+    // Reset Chart
+    const coin = state.coins[sym];
+    coin.history = []; // Clear history on switch for clean start
+    chart.data.datasets[0].data = [];
+    chart.update();
+
+    // Color Theme Update
+    const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
+    const color = colors[sym] || '#ffffff';
+    chart.data.datasets[0].borderColor = color;
+    chart.data.datasets[0].backgroundColor = (ctx) => {
+      const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+      g.addColorStop(0, color+'33'); g.addColorStop(1, color+'00');
+      return g;
+    };
   }
 
   function updateChart(coin) {
-    chart.data.labels = coin.labels;
+    chart.data.labels = new Array(coin.history.length).fill('');
     chart.data.datasets[0].data = coin.history;
-    chart.data.datasets[1].data = coin.volumes;
-    if(coin.history.length > 2) {
-      const min = Math.min(...coin.history);
-      const max = Math.max(...coin.history);
-      const pad = (max - min) * 0.1;
-      chart.options.scales.y.min = min - pad;
-      chart.options.scales.y.max = max + pad;
-      chart.options.scales.y1.max = Math.max(...coin.volumes) * 5; 
-    }
-    chart.update('none');
-  }
-
-  function addTradeRow(price, vol, time) {
-    const div = document.createElement('div');
-    div.className = 'trade-row';
-    const t = new Date(time).toLocaleTimeString([], { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    div.innerHTML = `<span>${t}</span><span class="${Math.random()>0.5?'up':'down'}">${fmt(price)}</span><span>${vol.toFixed(4)}</span>`;
-    els.tradeFeed.prepend(div);
-    if(els.tradeFeed.children.length > 50) els.tradeFeed.lastChild.remove();
-  }
-
-  // --- WEBSOCKET ---
-  let ws;
-  function connect() {
-    log('Connecting to Binance WebSocket...');
-    const streams = CONFIG.defaultCoins.map(c => c.toLowerCase()+'usdt@trade').join('/');
-    ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => { 
-      els.statusText.textContent = "WS: CONNECTED (12ms)";
-      els.statusText.style.color = CONFIG.colors.up;
-      log('Connection established.'); 
-    };
-    ws.onclose = () => { 
-      els.statusText.textContent = "WS: DISCONNECTED";
-      els.statusText.style.color = CONFIG.colors.down;
-      log('Connection lost. Retrying...'); 
-      setTimeout(connect, 3000); 
-    };
+    // Auto-Scale
+    const min = Math.min(...coin.history);
+    const max = Math.max(...coin.history);
+    const pad = (max - min) * 0.1;
+    chart.options.scales.y.min = min - pad;
+    chart.options.scales.y.max = max + pad;
     
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if(msg.data && msg.data.s) {
-        handleTick(msg.data.s.replace('USDT',''), parseFloat(msg.data.p), parseFloat(msg.data.q), msg.data.T);
-      }
-    };
+    chart.update('none'); // We use 'none' here but rely on the animation config in Chart options for the flow
   }
 
-  function subscribeWS(symbol) {
-    if(ws && ws.readyState === WebSocket.OPEN) {
-      log(`Subscribing to feed: ${symbol}USDT`);
-      ws.send(JSON.stringify({ method: "SUBSCRIBE", params: [`${symbol.toLowerCase()}usdt@trade`], id: Date.now() }));
+  function updateKPI(coin) {
+    els.kpi.p.textContent = fmt(coin.price);
+    els.kpi.h.textContent = fmt(coin.high);
+    els.kpi.v.textContent = parseInt(coin.vol).toLocaleString();
+    if(coin.prev) {
+      const pct = ((coin.price - coin.prev)/coin.prev)*100;
+      els.kpi.c.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
+      els.kpi.c.style.color = pct>=0 ? CONFIG.colors.up : CONFIG.colors.down;
     }
   }
 
-  // --- EVENTS ---
-  function fmt(n) { 
-    return (n * state.rate).toLocaleString(undefined, { style: 'currency', currency: state.currency === 'USDT' ? 'USD' : state.currency }); 
+  // --- CONNECTION ---
+  const ws = new WebSocket('wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade'); // Initial
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if(msg.data && msg.data.s) {
+      const s = msg.data.s.replace('USDT','');
+      const p = parseFloat(msg.data.p);
+      const q = parseFloat(msg.data.q);
+      handleTick(s, p, q);
+      if(s === state.active) addTrade(p, q, msg.data.T);
+    }
+  };
+
+  function subscribe(sym) {
+    if(ws.readyState === 1) {
+      ws.send(JSON.stringify({ method:"SUBSCRIBE", params:[`${sym.toLowerCase()}usdt@trade`], id: Date.now() }));
+    } else {
+      ws.addEventListener('open', () => subscribe(sym));
+    }
   }
 
-  document.getElementById('addCoinBtn').addEventListener('click', () => {
-    const val = document.getElementById('newCoinInput').value.toUpperCase().trim();
-    if(val && !state.coins[val]) {
-      initCoin(val);
-      document.getElementById('newCoinInput').value = '';
+  function addTrade(p, q, t) {
+    const row = document.createElement('div');
+    row.className = 'trade-row';
+    const time = new Date(t).toLocaleTimeString().split(' ')[0];
+    row.innerHTML = `<span>${time}</span><span style="color:${Math.random()>.5?CONFIG.colors.up:CONFIG.colors.down}">${fmt(p)}</span><span style="text-align:right">${q.toFixed(3)}</span>`;
+    els.feed.prepend(row);
+    if(els.feed.children.length > 40) els.feed.lastChild.remove();
+  }
+
+  // --- UTILS ---
+  function fmt(n) { return (n*state.rate).toLocaleString('en-US',{style:'currency',currency:state.currency==='USDT'?'USD':'INR'}); }
+  
+  document.getElementById('addBtn').onclick = () => { document.getElementById('inputPanel').style.display='block'; document.getElementById('inputCoin').focus(); };
+  document.getElementById('inputCoin').onkeypress = (e) => {
+    if(e.key === 'Enter') {
+      const v = e.target.value.toUpperCase();
+      if(v) initCoin(v);
+      e.target.value = ''; document.getElementById('inputPanel').style.display='none';
     }
-  });
-  document.getElementById('newCoinInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('addCoinBtn').click(); });
-  document.getElementById('currencySelector').addEventListener('change', (e) => { state.currency = e.target.value; state.rate = e.target.value === 'INR' ? 86.5 : 1; log(`Currency switched to ${state.currency}`); });
-  document.getElementById('pauseBtn').addEventListener('click', function(){ 
-    state.paused = !state.paused; 
-    this.textContent = state.paused ? 'RESUME FEED' : 'HALT FEED';
-    log(state.paused ? 'Feed paused by user' : 'Feed resumed');
-  });
+  };
+  document.getElementById('currencySelector').onchange = (e) => { state.currency = e.target.value; state.rate = state.currency==='INR'?86.5:1; };
 
   // Init
-  CONFIG.defaultCoins.forEach(initCoin);
-  connect();
+  CONFIG.defaultCoins.forEach(c => initCoin(c));
+  CONFIG.popularCoins.forEach(c => initCoin(c, true));
 
 })();
 </script>
