@@ -3,23 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Magic Internet Money | Quant Terminal</title>
+  <title>MIM | Genesis Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- QUANT THEME --- */
+    /* --- GENESIS THEME --- */
     :root { 
       --bg: #000000;          
-      --panel: #0b0b0b;       
-      --border: #1a1a1a;      
-      --text: #e5e5e5; 
+      --panel: #0a0a0a;       
+      --border: #1f1f1f;      
+      --text: #e0e0e0; 
       --text-dim: #666;
-      --accent: #00E5FF; /* Cyan Neon */
+      --accent: #FF3B30; /* Matrix Red/Orange accent */
       --green: #0ecb81;     
       --red: #f6465d;      
-      --font: 'Inter', system-ui, sans-serif;
-      --mono: 'IBM Plex Mono', 'Menlo', monospace;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Menlo', monospace;
     }
 
     * { box-sizing: border-box; }
@@ -29,43 +29,57 @@
     .dashboard {
       display: grid;
       height: 100vh;
-      grid-template-rows: 54px 1fr;
-      grid-template-columns: 260px 1fr 320px;
+      grid-template-rows: 48px 1fr;
+      grid-template-columns: 280px 1fr 320px;
       grid-template-areas: "head head head" "side main feed";
     }
 
-    /* 1. HEADER */
+    /* 1. HEADER (Pro Metrics) */
     .appbar {
       grid-area: head; background: var(--panel); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
     }
-    .brand { font-weight: 800; font-size: 14px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; color: #fff; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
-    .live-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
-    .tag { background: #051a1d; color: var(--accent); border: 1px solid #0a3a40; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-family: var(--mono); letter-spacing: 1px; }
+    .brand-group { display: flex; align-items: center; gap: 16px; }
+    .brand { font-weight: 800; font-size: 14px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; color: #fff; }
+    .metric { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-left: 1px solid #222; padding-left: 12px; }
+    .metric span { color: var(--text); font-weight: 600; }
+    .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
 
     /* 2. SIDEBAR */
     .sidebar { grid-area: side; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
     .sec-head { 
-      padding: 12px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
+      padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
-      background: var(--panel); display: flex; justify-content: space-between;
+      background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     }
-    .coin-list { flex: 1; overflow-y: auto; }
+    .coin-list { flex: 1; overflow-y: auto; max-height: 60%; }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
       padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
       font-size: 13px; transition: background 0.1s; border-bottom: 1px solid #0e0e0e;
     }
     .coin-row:hover { background: #111; }
-    .coin-row.active { background: #0a1f22; border-left-color: var(--accent); }
+    .coin-row.active { background: #111; border-left-color: var(--text); }
     
+    /* Dedicated System Log Area */
+    .terminal-panel {
+      flex: 1; border-top: 1px solid var(--border); background: #020202; 
+      display: flex; flex-direction: column; min-height: 150px;
+    }
+    .terminal-head { background: #080808; color: #888; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; }
+    .sys-log { flex: 1; padding: 10px; font-family: var(--mono); font-size: 10px; overflow-y: auto; color: #444; display: flex; flex-direction: column-reverse; }
+    .log-line { margin-bottom: 3px; word-break: break-all; }
+    .cursor { display: inline-block; width: 6px; height: 10px; background: var(--accent); animation: blink 1s infinite; vertical-align: middle; margin-left: 4px; }
+    @keyframes blink { 50% { opacity: 0; } }
+
     /* 3. MAIN */
     .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
     
-    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); height: 80px; }
+    /* KPI Bar */
+    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); height: 70px; }
     .kpi-box { padding: 0 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
-    .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
-    .kpi-val { font-family: var(--mono); font-size: 20px; font-weight: 500; letter-spacing: -0.5px; }
+    .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
 
     /* Chart Area */
     .chart-container { flex: 1; position: relative; width: 100%; background: var(--bg); }
@@ -75,18 +89,21 @@
     .feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
     .trade-row { 
       display: grid; grid-template-columns: 50px 1fr 60px; gap: 10px;
-      padding: 6px 14px; font-family: var(--mono); font-size: 10px; 
+      padding: 5px 14px; font-family: var(--mono); font-size: 10px; 
       color: var(--text-dim); border-bottom: 1px solid #0e0e0e; align-items: center;
     }
-    .trade-whale { background: rgba(0, 229, 255, 0.05); border-left: 2px solid var(--accent); }
-    .trade-whale span { color: var(--accent) !important; font-weight: 700; }
+    .trade-whale { background: rgba(255, 255, 255, 0.05); border-left: 2px solid #fff; }
 
     /* UTILS */
     .up { color: var(--green); } .down { color: var(--red); }
     
-    /* System Log */
-    .sys-log { height: 120px; border-top: 1px solid var(--border); padding: 10px; font-family: var(--mono); font-size: 10px; overflow-y: auto; color: #444; background: #020202; }
-    .log-line { margin-bottom: 4px; }
+    /* Pulse Animation for Chart */
+    .pulse-dot {
+      width: 8px; height: 8px; background: #fff; border-radius: 50%;
+      position: absolute; display: none; pointer-events: none;
+      box-shadow: 0 0 10px rgba(255,255,255,0.8);
+      transform: translate(-50%, -50%);
+    }
 
     @media(max-width: 1000px){ .dashboard { display: flex; flex-direction: column; height: auto; overflow: auto; } .chart-container { height: 350px; } }
   </style>
@@ -95,10 +112,14 @@
 
   <div class="dashboard">
     <header class="appbar">
-      <div class="brand">
-        <div class="live-dot"></div>
-        <span>MAGIC INTERNET MONEY</span>
-        <span class="tag">QUANT v6.0</span>
+      <div class="brand-group">
+        <div class="brand">
+          <div class="live-dot"></div>
+          <span>MAGIC INTERNET MONEY</span>
+        </div>
+        <div class="metric">LATENCY: <span id="ping">12ms</span></div>
+        <div class="metric">GAS: <span id="gas">15</span></div>
+        <div class="metric">DOM: <span id="dom">54.2%</span></div>
       </div>
       <div>
         <select id="currency" style="background:#111; color:#fff; border:1px solid #333; padding:4px 8px; font-size:11px; border-radius:4px; font-family:var(--mono)">
@@ -109,11 +130,17 @@
     </header>
 
     <aside class="sidebar">
-      <div class="sec-head">Market Watch</div>
+      <div class="sec-head">Watchlist</div>
       <div id="coinList" class="coin-list"></div>
       
-      <div class="sec-head" style="border-top:1px solid var(--border)">Engine Log</div>
-      <div id="sysLog" class="sys-log"></div>
+      <div class="terminal-panel">
+        <div class="terminal-head">System Log_</div>
+        <div class="sys-log" id="sysLogContainer">
+          <div style="margin-top:auto">
+            <span id="logOutput"></span><span class="cursor"></span>
+          </div>
+        </div>
+      </div>
     </aside>
 
     <main class="main-panel">
@@ -127,8 +154,8 @@
           <div id="kpiChange" class="kpi-val">---</div>
         </div>
         <div class="kpi-box">
-          <div class="kpi-lbl">Volatility (StdDev)</div>
-          <div id="kpiVol" class="kpi-val" style="color:var(--accent)">---</div>
+          <div class="kpi-lbl">24h Vol</div>
+          <div id="kpiVol" class="kpi-val">---</div>
         </div>
         <div class="kpi-box">
           <div class="kpi-lbl">Session High</div>
@@ -143,8 +170,8 @@
 
     <aside class="feed-panel">
       <div class="sec-head">
-        <span>Order Stream</span>
-        <span style="font-size:9px; opacity:0.5">> $10k flagged</span>
+        <span>Order Tape</span>
+        <span style="font-size:9px; opacity:0.5">Live</span>
       </div>
       <div id="tradeFeed" class="feed-scroll"></div>
     </aside>
@@ -153,8 +180,8 @@
 <script>
 (function(){
   // --- CONFIG ---
-  const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK'];
-  const WHALE_THRESHOLD = 10000;
+  const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX'];
+  const WHALE_THRESHOLD = 20000;
   
   const STATE = {
     active: 'BTC',
@@ -163,11 +190,42 @@
     coins: {} 
   };
 
-  // --- CHART (Bollinger Bands + Price) ---
+  // --- CHARTING WITH PULSE ---
   const ctx = document.getElementById('chart').getContext('2d');
   
-  // Custom Plugin: Crosshair
-  const crosshair = {
+  // Custom Plugin: Pulse Beacon
+  const pulsePlugin = {
+    id: 'pulseBeacon',
+    afterDraw: (chart) => {
+      const ctx = chart.ctx;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta.data.length) return;
+      
+      const lastPoint = meta.data[meta.data.length - 1];
+      const x = lastPoint.x;
+      const y = lastPoint.y;
+
+      // Glow effect
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = '#fff';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(x, y, 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  // Crosshair Plugin
+  const crosshairPlugin = {
     id: 'crosshair',
     afterDatasetsDraw: (chart) => {
       if (chart.tooltip?._active?.length) {
@@ -178,7 +236,7 @@
         ctx.moveTo(x, chart.scales.y.top);
         ctx.lineTo(x, chart.scales.y.bottom);
         ctx.lineWidth = 1;
-        ctx.strokeStyle = '#00E5FF';
+        ctx.strokeStyle = '#333';
         ctx.setLineDash([4, 4]);
         ctx.stroke();
         ctx.restore();
@@ -190,41 +248,25 @@
     type: 'line',
     data: {
       labels: [],
-      datasets: [
-        // 0: Main Price Line
-        {
-          label: 'Price',
-          data: [],
-          borderColor: '#00E5FF',
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.2,
-          borderShadowColor: '#00E5FF', // Note: Chart.js needs external plugin for real shadow, simplifying here
-          zIndex: 10
+      datasets: [{
+        label: 'Price',
+        data: [],
+        borderColor: '#fff',
+        borderWidth: 2,
+        pointRadius: 0,
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+          g.addColorStop(0, 'rgba(255,255,255,0.1)');
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          return g;
         },
-        // 1: Upper Band (Bollinger)
-        {
-          label: 'Upper',
-          data: [],
-          borderColor: 'transparent',
-          pointRadius: 0,
-          fill: false,
-          tension: 0.2
-        },
-        // 2: Lower Band (Bollinger) - Fills to Upper
-        {
-          label: 'Lower',
-          data: [],
-          borderColor: 'transparent',
-          backgroundColor: 'rgba(0, 229, 255, 0.1)', // The "Cloud" Color
-          fill: '-1', // Fill to dataset index 1 (Upper)
-          pointRadius: 0,
-          tension: 0.2
-        }
-      ]
+        fill: true,
+        tension: 0.3 // Smooth curve
+      }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
+      responsive: true, maintainAspectRatio: false, 
+      animation: { duration: 0 }, // Instant updates for performance
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
@@ -232,43 +274,45 @@
         y: { 
           position: 'right', 
           grid: { color: '#1a1a1a' }, 
-          ticks: { color: '#666', callback: v => v.toLocaleString() } 
+          ticks: { color: '#555', callback: v => v.toLocaleString() } 
         }
       }
     },
-    plugins: [crosshair]
+    plugins: [pulsePlugin, crosshairPlugin]
   });
 
-  // --- BOLLINGER BAND LOGIC ---
-  function calculateBollinger(prices, period = 20, multiplier = 2) {
-    if (prices.length < period) return { upper: null, lower: null, std: 0 };
+  // --- LOGGING ---
+  function log(msg, type='SYS') {
+    const container = document.getElementById('logOutput');
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    const ts = new Date().toLocaleTimeString().split(' ')[0];
     
-    // Simple Moving Average (SMA)
-    const slice = prices.slice(-period);
-    const sum = slice.reduce((a, b) => a + b, 0);
-    const mean = sum / period;
-
-    // Standard Deviation
-    const squaredDiffs = slice.map(p => Math.pow(p - mean, 2));
-    const avgSquaredDiff = squaredDiffs.reduce((a, b) => a + b, 0) / period;
-    const stdDev = Math.sqrt(avgSquaredDiff);
-
-    return {
-      upper: mean + (stdDev * multiplier),
-      lower: mean - (stdDev * multiplier),
-      std: stdDev
-    };
+    // Color coding
+    let color = '#666';
+    if(type === 'NET') color = '#0ecb81'; // Green
+    if(type === 'ERR') color = '#f6465d'; // Red
+    
+    div.innerHTML = `<span style="color:${color}">[${type}]</span> ${ts} > ${msg}`;
+    
+    // Insert after the existing content (to simulate terminal append)
+    // Actually, let's prepend to a container above the cursor
+    const wrapper = document.getElementById('sysLogContainer');
+    wrapper.insertBefore(div, wrapper.firstChild);
+    
+    // Keep clean
+    if(wrapper.children.length > 30) wrapper.lastChild.remove();
   }
 
-  // --- MAIN LOGIC ---
+  // --- LOGIC ---
   function init() {
-    log('Booting Quant Engine...');
+    log('System Kernel Loaded.', 'SYS');
     const list = document.getElementById('coinList');
     
     COINS.forEach(sym => {
       STATE.coins[sym] = { 
         price: 0, prev: 0, high: 0, 
-        history: [], upper: [], lower: [], labels: [] 
+        history: [], labels: [] 
       };
       
       const row = document.createElement('div');
@@ -289,6 +333,12 @@
     
     connect();
     setTimeout(() => loadCoin('BTC'), 500);
+    
+    // Mock Header Data updates
+    setInterval(() => {
+      document.getElementById('ping').innerText = (12 + Math.random()*20).toFixed(0) + 'ms';
+      document.getElementById('gas').innerText = (10 + Math.random()*5).toFixed(0);
+    }, 2000);
   }
 
   function loadCoin(sym) {
@@ -296,14 +346,21 @@
     document.getElementById(`row-${sym}`).classList.add('active');
     
     STATE.active = sym;
-    log(`Analysis Target: ${sym}`);
+    log(`Switched feed to ${sym}`, 'SYS');
     document.getElementById('tradeFeed').innerHTML = ''; 
     
-    // Clear Chart
     chart.data.datasets[0].data = [];
-    chart.data.datasets[1].data = [];
-    chart.data.datasets[2].data = [];
     chart.update();
+
+    // Theme Color
+    const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
+    const c = colors[sym] || '#ffffff';
+    chart.data.datasets[0].borderColor = c;
+    chart.data.datasets[0].backgroundColor = (ctx) => {
+      const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+      g.addColorStop(0, c+'22'); g.addColorStop(1, c+'00');
+      return g;
+    };
   }
 
   function handleTick(sym, price, time) {
@@ -312,72 +369,45 @@
     coin.price = price;
     if(price > coin.high) coin.high = price;
 
-    // UI Sidebar
+    // Sidebar UI
     const pEl = document.getElementById(`p-${sym}`);
     if(pEl) {
       pEl.textContent = fmt(price);
       pEl.style.color = price >= coin.prev ? '#0ecb81' : '#f6465d';
     }
 
-    // Active Coin Updates
     if(sym === STATE.active) {
-      // 1. Chart History
+      // Chart Logic
       coin.history.push(price);
-      coin.labels.push(new Date(time).toLocaleTimeString());
+      coin.labels.push(time);
+      if(coin.history.length > 100) { coin.history.shift(); coin.labels.shift(); }
       
-      // 2. Calculate Bollinger Bands
-      const bb = calculateBollinger(coin.history, 20, 2);
-      coin.upper.push(bb.upper);
-      coin.lower.push(bb.lower);
-
-      if(coin.history.length > 100) {
-        coin.history.shift(); coin.labels.shift();
-        coin.upper.shift(); coin.lower.shift();
-      }
-      
-      chart.data.datasets[0].data = coin.history; // Price
-      chart.data.datasets[1].data = coin.upper;   // Upper Band
-      chart.data.datasets[2].data = coin.lower;   // Lower Band
+      chart.data.datasets[0].data = coin.history;
       chart.data.labels = coin.labels;
       
-      // Auto-Scale
-      const validUpper = coin.upper.filter(n => n); // remove nulls
-      const validLower = coin.lower.filter(n => n);
-      if(validUpper.length && validLower.length) {
-         const min = Math.min(...validLower);
-         const max = Math.max(...validUpper);
-         const pad = (max - min) * 0.1;
-         chart.options.scales.y.min = min - pad;
-         chart.options.scales.y.max = max + pad;
-      } else if (coin.history.length > 0) {
-         // Fallback before BB calc is ready
-         const min = Math.min(...coin.history);
-         const max = Math.max(...coin.history);
-         chart.options.scales.y.min = min * 0.9995;
-         chart.options.scales.y.max = max * 1.0005;
-      }
+      // Scaling
+      const min = Math.min(...coin.history);
+      const max = Math.max(...coin.history);
+      chart.options.scales.y.min = min * 0.9995;
+      chart.options.scales.y.max = max * 1.0005;
+      
+      chart.update(); // Pulse plugin handles the "animation" feel
 
-      chart.update();
-
-      // 3. KPI Updates
+      // KPI
       document.getElementById('kpiPrice').textContent = fmt(price);
       document.getElementById('kpiHigh').textContent = fmt(coin.high);
-      document.getElementById('kpiVol').textContent = bb.std ? bb.std.toFixed(2) : '---';
-      
       if(coin.prev) {
         const pct = ((price - coin.prev)/coin.prev)*100;
         const el = document.getElementById('kpiChange');
         el.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
         el.style.color = pct>=0 ? '#0ecb81' : '#f6465d';
       }
-      
-      document.title = `${fmt(price)} ${sym} | MIM`;
+      document.title = `${fmt(price)} ${sym}`;
     }
   }
 
   function addTrade(sym, price, qty, time, isMaker) {
     if(sym !== STATE.active) return;
-    
     const val = price * qty;
     const isWhale = val > WHALE_THRESHOLD;
     
@@ -389,7 +419,7 @@
     row.innerHTML = `
       <span>${ts}</span>
       <span class="${typeClass}">${fmt(price)}</span>
-      <span>${isWhale ? '🐋 ' : ''}${val > 1000 ? (val/1000).toFixed(1)+'k' : val.toFixed(0)}</span>
+      <span>${isWhale ? '🐋' : ''}${val.toFixed(0)}</span>
     `;
     
     const feed = document.getElementById('tradeFeed');
@@ -398,45 +428,30 @@
   }
 
   function connect() {
-    log('Connecting to Exchange Stream...');
+    log('Establishing Uplink...', 'NET');
     const streams = COINS.map(c => c.toLowerCase()+'usdt@trade').join('/');
     const ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => log('Data Stream Active.', '#00E5FF');
-    ws.onclose = () => { log('Connection lost. Retry in 3s...', '#f6465d'); setTimeout(connect, 3000); };
+    ws.onopen = () => log('Binance Stream Active.', 'NET');
+    ws.onclose = () => { log('Connection lost. Retrying...', 'ERR'); setTimeout(connect, 3000); };
     
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if(!msg.data) return;
-      const { s: symbolRaw, p: price, q: qty, m: isMaker, T: time } = msg.data;
-      const sym = symbolRaw.replace('USDT','');
-      
-      handleTick(sym, parseFloat(price), time);
-      addTrade(sym, parseFloat(price), parseFloat(qty), time, isMaker);
+      const { s, p, q, m, T } = msg.data;
+      const sym = s.replace('USDT','');
+      handleTick(sym, parseFloat(p), T);
+      addTrade(sym, parseFloat(p), parseFloat(q), T, m);
     };
   }
 
-  // --- UTILS ---
-  function log(msg, color='#666') {
-    const box = document.getElementById('sysLog');
-    const div = document.createElement('div');
-    div.className = 'log-line';
-    div.style.color = color;
-    div.innerHTML = `> ${msg}`;
-    box.prepend(div);
-  }
-
   function fmt(n) { 
-    return (n * STATE.rate).toLocaleString('en-US', {
-      style:'currency', currency: STATE.currency==='USDT'?'USD':'INR'
-    }); 
+    return (n * STATE.rate).toLocaleString('en-US', { style:'currency', currency: STATE.currency==='USDT'?'USD':'INR' }); 
   }
 
   document.getElementById('currency').onchange = (e) => {
-    STATE.currency = e.target.value;
-    STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
-    log(`Currency rebased to ${STATE.currency}`);
-    Object.values(STATE.coins).forEach(c => { c.history=[]; c.upper=[]; c.lower=[]; });
+    STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
+    Object.values(STATE.coins).forEach(c => c.history=[]);
   };
 
   init();
