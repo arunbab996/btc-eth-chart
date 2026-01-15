@@ -3,69 +3,63 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Matte Black Tracker</title>
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231E1E1E'/><text x='50' y='65' font-size='40' text-anchor='middle' fill='white'>M</text></svg>">
+  <title>Magic Internet Money</title>
+  
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
     /* MATTE BLACK THEME */
     :root { 
-      --bg: #141414;        /* Deep Matte Black */
-      --panel: #1E1E1E;     /* Lighter Matte Panel */
-      --border: #2A2A2A;    /* Subtle Border */
-      --text-main: #E0E0E0; /* Off-white text */
-      --text-dim: #757575;  /* Dim text */
-      --accent: #E0E0E0;    /* White accent */
+      --bg: #141414;        
+      --panel: #1E1E1E;     
+      --border: #333333;    
+      --text-main: #E0E0E0; 
+      --text-dim: #888888;  
       --green: #3bd671; 
       --red: #ff5b5b;
+      --btc-orange: #f7931a;
     }
 
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; }
     
-    /* Layout */
     .root { height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Header */
     header.appbar { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
     
-    .main { flex: 1; display: flex; gap: 20px; padding: 20px; box-sizing: border-box; overflow: hidden; }
+    /* Layout */
+    .main { flex: 1; display: flex; gap: 20px; padding: 20px; overflow: hidden; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; }
     
-    /* Panels */
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; }
-    .chart-panel { flex: 3; min-width: 0; } /* min-width 0 prevents canvas overflow */
-    .sidebar { flex: 1; max-width: 380px; display: flex; flex-direction: column; gap: 16px; min-width: 280px; }
-
     /* Chart Area */
-    .chart-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    .chart-panel { flex: 3; padding: 20px; position: relative; min-width: 0; }
+    .chart-container { flex: 1; position: relative; width: 100%; min-height: 0; }
     
-    /* Watchlist Items */
-    .coin-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
+    /* Sidebar */
+    .sidebar { flex: 1; max-width: 360px; display: flex; flex-direction: column; gap: 16px; min-width: 280px; }
+    
+    /* Coin Rows */
+    .coin-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
     .coin-row:hover { background: rgba(255,255,255,0.03); }
-    .coin-row.active { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
-    
-    .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #2c2c2c; object-fit: cover; }
-    .coin-info { flex: 1; }
-    .coin-price { font-weight: 600; font-feature-settings: "tnum"; }
+    .coin-row.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+    .coin-icon { width: 32px; height: 32px; border-radius: 50%; }
     
     /* Typography */
-    .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-    .value-lg { font-size: 24px; font-weight: 700; font-feature-settings: "tnum"; }
-    .small { font-size: 13px; color: var(--text-dim); }
-
-    /* Inputs & Buttons */
-    input, select { background: var(--bg); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 6px; outline: none; font-family: inherit; }
-    input:focus, select:focus { border-color: #555; }
+    .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+    .price-lg { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+    .price-sm { font-weight: 600; font-variant-numeric: tabular-nums; }
     
-    button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; }
+    /* Controls */
+    input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; outline: none; }
+    button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
     button:hover { background: #444; }
-    button.primary { background: var(--text-main); color: var(--bg); }
-    button.primary:hover { background: #fff; }
-
+    button.primary { background: var(--text-main); color: #000; }
+    
     /* Utils */
     .flex-row { display: flex; align-items: center; gap: 10px; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; margin-right: 8px; transition: background 0.3s; }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; margin-right: 8px; }
 
     @media(max-width: 900px){ .main{ flex-direction: column; overflow-y: auto; } .chart-panel { height: 400px; flex: none; } }
   </style>
@@ -76,7 +70,7 @@
     <header class="appbar">
       <div class="flex-row">
         <div id="statusDot" class="status-dot" title="Connecting..."></div>
-        <div style="font-weight:700; letter-spacing:-0.5px">Matte Black Tracker</div>
+        <div style="font-weight:800; letter-spacing:-0.5px">Magic Internet Money</div>
       </div>
       
       <div class="flex-row">
@@ -92,43 +86,37 @@
     <div class="main">
       
       <section class="chart-panel card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px">
+        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end">
           <div>
-            <div class="label" style="margin-bottom:4px">Current Price</div>
+            <div class="label" style="margin-bottom:6px">Live Price</div>
             <div class="flex-row">
-              <span id="bigPrice" class="value-lg">—</span>
-              <span id="bigChange" style="font-size:14px; font-weight:600">—</span>
+              <span id="bigPrice" class="price-lg">Loading...</span>
+              <span id="bigChange" style="font-size:16px; font-weight:600">—</span>
             </div>
-            <div class="small" style="margin-top:4px"><span id="activeSymbolName">Bitcoin</span> · Live Data</div>
           </div>
-          <div class="small" id="lastUpdate">Connecting...</div>
+          <div class="label" id="activeSymbolName">BTC / USDT</div>
         </div>
 
-        <div class="chart-canvas-wrap">
+        <div class="chart-container">
           <canvas id="chart"></canvas>
         </div>
       </section>
 
       <aside class="sidebar">
-        
-        <div class="card" style="padding:12px; gap:8px">
-          <div class="label">Add Coin</div>
+        <div class="card" style="padding:12px">
           <div class="flex-row">
-            <input type="text" id="newCoinInput" placeholder="Symbol (e.g. SOL)" style="flex:1; text-transform:uppercase">
+            <input type="text" id="newCoinInput" placeholder="Symbol (e.g. SOL)" style="flex:1; text-transform:uppercase; font-weight:600">
             <button id="addCoinBtn" class="primary">Add</button>
           </div>
         </div>
 
         <div class="card" style="flex:1; padding:0; overflow:hidden">
-          <div style="padding:16px 16px 8px; display:flex; justify-content:space-between">
+          <div style="padding:16px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border)">
             <div class="label">Watchlist</div>
-            <div class="label" style="cursor:pointer" id="clearBtn">Clear All</div>
+            <div class="label" style="cursor:pointer" id="clearBtn">Reset</div>
           </div>
-          
-          <div id="watchlist" style="flex:1; overflow-y:auto; padding:8px">
-            </div>
+          <div id="watchlist" style="flex:1; overflow-y:auto; padding:8px"></div>
         </div>
-
       </aside>
     </div>
   </div>
@@ -137,14 +125,8 @@
 (function(){
   // --- CONFIG ---
   const CONFIG = {
-    colors: { 
-      line: '#E0E0E0', 
-      grid: '#2A2A2A', 
-      text: '#757575', 
-      up: '#3bd671', 
-      down: '#ff5b5b' 
-    },
-    maxPoints: 400, // History length
+    colors: { line: '#ffffff', grid: '#2A2A2A', text: '#666', up: '#3bd671', down: '#ff5b5b' },
+    maxPoints: 300,
     defaultCoins: ['BTC', 'ETH']
   };
 
@@ -154,55 +136,55 @@
     currency: 'USDT',
     rate: 1,
     paused: false,
-    coins: {} // Will store data: { BTC: { price: 0, prev: 0, history: [], color: '...' } }
+    coins: {} 
   };
 
-  // --- UI REFS ---
+  // --- UI ELEMENTS ---
   const els = {
-    chart: document.getElementById('chart').getContext('2d'),
+    chartCtx: document.getElementById('chart').getContext('2d'),
     watchlist: document.getElementById('watchlist'),
     bigPrice: document.getElementById('bigPrice'),
     bigChange: document.getElementById('bigChange'),
     activeName: document.getElementById('activeSymbolName'),
-    status: document.getElementById('statusDot'),
-    input: document.getElementById('newCoinInput'),
-    addBtn: document.getElementById('addCoinBtn')
+    status: document.getElementById('statusDot')
   };
 
-  // --- CHART SETUP ---
-  const chart = new Chart(els.chart, {
+  // --- CHART INITIALIZATION ---
+  // We use a helper to create the gradient
+  function createGradient(ctx, color) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, color + '40'); // 25% opacity
+    gradient.addColorStop(1, color + '00'); // 0% opacity
+    return gradient;
+  }
+
+  const chart = new Chart(els.chartCtx, {
     type: 'line',
     data: {
-      labels: [],
-      datasets: [
-        {
-          data: [],
-          borderColor: CONFIG.colors.line,
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: true,
-          backgroundColor: (ctx) => {
-            const grad = ctx.chart.ctx.createLinearGradient(0,0,0,400);
-            grad.addColorStop(0, 'rgba(255,255,255,0.1)');
-            grad.addColorStop(1, 'rgba(255,255,255,0.0)');
-            return grad;
-          },
-          tension: 0.1
-        }
-      ]
+      labels: [], 
+      datasets: [{
+        label: 'Price',
+        data: [],
+        borderColor: '#ffffff',
+        borderWidth: 2,
+        tension: 0.4, // Smooths the line
+        pointRadius: 0,
+        fill: true,
+        backgroundColor: 'rgba(255,255,255,0.05)'
+      }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: false,
+      animation: false, // Important for performance
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false } },
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
       scales: {
-        x: { display: false },
+        x: { display: false }, // Hide X axis for cleaner look
         y: {
           position: 'right',
           grid: { color: CONFIG.colors.grid },
-          ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() }
+          ticks: { color: CONFIG.colors.text, callback: (v) => v.toLocaleString() }
         }
       }
     }
@@ -210,204 +192,183 @@
 
   // --- LOGIC ---
 
-  // 1. Initialize a Coin
   function initCoin(symbol) {
     if(state.coins[symbol]) return;
+    
+    // Initialize empty data structure
     state.coins[symbol] = {
-      price: null,
-      prev: null,
-      history: [],
-      name: symbol // Could fetch full name if needed
+      price: 0,
+      prev: 0,
+      history: [], // Array of prices
+      color: '#ffffff'
     };
-    renderWatchlistItem(symbol);
+
+    renderWatchlistRow(symbol);
     subscribeWS(symbol);
   }
 
-  // 2. Render Watchlist Item
-  function renderWatchlistItem(symbol) {
+  function renderWatchlistRow(symbol) {
     const div = document.createElement('div');
     div.className = `coin-row ${symbol === state.activeSymbol ? 'active' : ''}`;
     div.id = `row-${symbol}`;
     div.onclick = () => switchCoin(symbol);
     
-    // Icon URL from CDN (Standard crypto icon library)
-    const iconUrl = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${symbol.toLowerCase()}.svg`;
+    // Crypto Icon CDN
+    const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${symbol.toLowerCase()}.svg`;
     
     div.innerHTML = `
-      <img src="${iconUrl}" class="coin-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSIxNiIgeT0iMjEiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3NzciD4/PC90ZXh0Pjwvc3ZnPg=='">
-      <div class="coin-info">
-        <div style="font-weight:600; font-size:14px">${symbol}</div>
-        <div class="small" style="opacity:0.7">USDT</div>
+      <img src="${icon}" class="coin-icon" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg'">
+      <div style="flex:1">
+        <div style="font-weight:600">${symbol}</div>
+        <div class="label" style="font-size:10px">USDT</div>
       </div>
       <div style="text-align:right">
-        <div class="coin-price" id="price-${symbol}">—</div>
-        <div class="small" id="change-${symbol}">—</div>
+        <div class="price-sm" id="price-${symbol}">...</div>
+        <div class="label" id="change-${symbol}">—</div>
       </div>
     `;
     els.watchlist.appendChild(div);
   }
 
-  // 3. Switch Active Coin
   function switchCoin(symbol) {
-    // UI Update
+    // 1. Update UI Selection
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     const row = document.getElementById(`row-${symbol}`);
     if(row) row.classList.add('active');
 
     state.activeSymbol = symbol;
-    els.activeName.textContent = symbol + " / USDT";
-    
-    // Reset Chart Data
-    const coinData = state.coins[symbol];
-    chart.data.labels = new Array(coinData.history.length).fill('');
-    chart.data.datasets[0].data = coinData.history; // This will just point to the array
-    
-    // Force re-render immediately to avoid lag
-    updateMainDisplay(); 
+    els.activeName.textContent = `${symbol} / ${state.currency}`;
+
+    // 2. Update Chart Data immediately
+    const coin = state.coins[symbol];
+    if (coin.history.length > 0) {
+      updateChart(coin.history);
+      updateHeader(coin.price, coin.prev);
+    } else {
+      // Clear if no data yet
+      updateChart([]);
+      els.bigPrice.textContent = "Loading...";
+    }
   }
 
-  // 4. Process Incoming Data
   function handleTick(symbol, price) {
     if(!state.coins[symbol]) return;
     const coin = state.coins[symbol];
     
+    // Update State
     coin.prev = coin.price;
     coin.price = price;
     
-    // Push to history
-    coin.history.push(price * state.rate);
+    // Convert to selected currency for history storage
+    const localPrice = price * state.rate;
+    
+    coin.history.push(localPrice);
     if(coin.history.length > CONFIG.maxPoints) coin.history.shift();
 
-    // Update Sidebar UI
-    const priceEl = document.getElementById(`price-${symbol}`);
-    const changeEl = document.getElementById(`change-${symbol}`);
+    // DOM Updates (Sidebar)
+    const pEl = document.getElementById(`price-${symbol}`);
+    const cEl = document.getElementById(`change-${symbol}`);
+    if(pEl) pEl.textContent = fmt(price);
     
-    if(priceEl) {
-      priceEl.textContent = fmt(price);
-      // Flash effect could go here
-    }
-    
-    if(changeEl && coin.prev) {
-      const pct = ((price - coin.prev) / coin.prev) * 100;
-      changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      changeEl.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
+    if(cEl && coin.prev) {
+      const pct = ((price - coin.prev)/coin.prev) * 100;
+      cEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      cEl.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
     }
 
-    // Update Chart if active
+    // Chart Updates (Active Coin Only)
     if(symbol === state.activeSymbol && !state.paused) {
-      updateMainDisplay();
+      updateHeader(coin.price, coin.prev);
+      updateChart(coin.history);
     }
   }
 
-  function updateMainDisplay() {
-    const coin = state.coins[state.activeSymbol];
-    if(!coin || !coin.price) return;
+  function updateChart(dataArray) {
+    // We create a dummy label array of same length
+    chart.data.labels = new Array(dataArray.length).fill('');
+    chart.data.datasets[0].data = dataArray;
 
-    // Header Numbers
-    els.bigPrice.textContent = fmt(coin.price);
-    const pct = coin.prev ? ((coin.price - coin.prev) / coin.prev) * 100 : 0;
-    els.bigChange.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-    els.bigChange.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
-    document.title = `${fmt(coin.price)} ${state.activeSymbol}`;
-
-    // Chart Auto-Scale
-    const hist = coin.history;
-    if(hist.length > 2) {
-      const min = Math.min(...hist);
-      const max = Math.max(...hist);
-      const pad = (max - min) * 0.1;
-      chart.options.scales.y.min = min - pad;
-      chart.options.scales.y.max = max + pad;
+    // Auto-Scale Y Axis
+    if(dataArray.length > 2) {
+      const min = Math.min(...dataArray);
+      const max = Math.max(...dataArray);
+      const padding = (max - min) * 0.2; // 20% padding for nice look
+      chart.options.scales.y.min = min - padding;
+      chart.options.scales.y.max = max + padding;
     }
 
-    chart.update('none'); // 'none' mode for performance
+    chart.update('none');
+  }
+
+  function updateHeader(price, prev) {
+    els.bigPrice.textContent = fmt(price);
+    document.title = `${fmt(price)} ${state.activeSymbol}`;
+    
+    if(prev) {
+      const pct = ((price - prev)/prev) * 100;
+      els.bigChange.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      els.bigChange.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
+    }
   }
 
   // --- WEBSOCKET ---
   let ws;
   function connect() {
-    // Start with default streams
-    const streams = CONFIG.defaultCoins.map(s => `${s.toLowerCase()}usdt@trade`).join('/');
+    const streams = CONFIG.defaultCoins.map(c => c.toLowerCase()+'usdt@trade').join('/');
     ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => {
-      els.status.style.background = CONFIG.colors.up;
-      els.status.title = "Connected via WebSocket";
-    };
-    
-    ws.onclose = () => {
-      els.status.style.background = CONFIG.colors.down;
-      setTimeout(connect, 3000); // Auto Reconnect
-    };
+    ws.onopen = () => { els.status.style.background = CONFIG.colors.up; els.status.title = "Online"; };
+    ws.onclose = () => { els.status.style.background = CONFIG.colors.down; setTimeout(connect, 2000); };
     
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
-      // Msg format: { stream: "btcusdt@trade", data: { p: "...", s: "BTCUSDT" ... } }
       if(msg.data && msg.data.s) {
-        const symbol = msg.data.s.replace('USDT',''); // Extract "BTC" from "BTCUSDT"
-        const price = parseFloat(msg.data.p);
-        handleTick(symbol, price);
+        const symbol = msg.data.s.replace('USDT','');
+        handleTick(symbol, parseFloat(msg.data.p));
       }
     };
   }
 
   function subscribeWS(symbol) {
     if(ws && ws.readyState === WebSocket.OPEN) {
-      const payload = {
-        method: "SUBSCRIBE",
-        params: [`${symbol.toLowerCase()}usdt@trade`],
-        id: Date.now()
-      };
-      ws.send(JSON.stringify(payload));
+      ws.send(JSON.stringify({ method: "SUBSCRIBE", params: [`${symbol.toLowerCase()}usdt@trade`], id: Date.now() }));
     }
   }
 
-  // --- UTILS ---
+  // --- UTILITIES ---
   function fmt(n) { 
-    return (n * state.rate).toLocaleString(undefined, {
-      style:'currency', 
+    return (n * state.rate).toLocaleString(undefined, { 
+      style: 'currency', 
       currency: state.currency === 'USDT' ? 'USD' : state.currency 
     }); 
   }
 
   // --- EVENTS ---
   document.getElementById('addCoinBtn').addEventListener('click', () => {
-    const val = els.input.value.toUpperCase().trim();
+    const val = document.getElementById('newCoinInput').value.toUpperCase().trim();
     if(val && !state.coins[val]) {
       initCoin(val);
-      els.input.value = '';
+      document.getElementById('newCoinInput').value = '';
     }
-  });
-
-  els.input.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') document.getElementById('addCoinBtn').click();
   });
 
   document.getElementById('currencySelector').addEventListener('change', (e) => {
     state.currency = e.target.value;
     state.rate = e.target.value === 'INR' ? 86.5 : 1;
-    // Recalculate history for all coins
-    Object.keys(state.coins).forEach(k => {
-      // Simplification: We don't store raw USD in history in this basic version,
-      // so we just clear history on currency switch to avoid spikes.
-      // A pro version would store raw USD and convert on render.
-      state.coins[k].history = []; 
-    });
-    updateMainDisplay();
+    // Clear histories on currency switch to avoid graph spikes
+    Object.values(state.coins).forEach(c => c.history = []);
+    chart.data.datasets[0].data = [];
+    chart.update();
   });
 
   document.getElementById('pauseBtn').addEventListener('click', function(){
     state.paused = !state.paused;
     this.textContent = state.paused ? 'Resume' : 'Pause';
   });
-  
-  document.getElementById('clearBtn').addEventListener('click', () => {
-    // Clear custom coins, keep active? 
-    // For now, just reload to defaults for simplicity or clear all but active
-    location.reload(); 
-  });
 
-  // --- INIT ---
+  document.getElementById('clearBtn').addEventListener('click', () => location.reload());
+
+  // Init
   CONFIG.defaultCoins.forEach(initCoin);
   connect();
 
