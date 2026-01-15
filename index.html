@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIM | Flow State Terminal</title>
+  <title>MIM | Data Dense Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- FLOW THEME --- */
+    /* --- DATA DENSE THEME --- */
     :root { 
       --bg: #000000;          
-      --panel: #0a0a0a;       
-      --border: #1f1f1f;      
+      --panel: #0b0b0b;       
+      --border: #222;      
       --text: #e0e0e0; 
       --text-dim: #666;
       --accent: #FF3B30; 
@@ -47,14 +47,17 @@
     
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    /* 2. SIDEBAR */
-    .sidebar { grid-area: side; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    /* 2. SIDEBAR (Left) */
+    .sidebar { grid-area: side; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; }
+    
     .sec-head { 
       padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
       background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     }
-    .coin-list { flex: 1; overflow-y: auto; }
+    
+    /* Coin List: Takes top 50% max, shrinks if needed */
+    .coin-list { flex: 0 1 auto; max-height: 50%; overflow-y: auto; border-bottom: 1px solid var(--border); }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
       padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
@@ -62,32 +65,39 @@
     }
     .coin-row:hover { background: #111; }
     .coin-row.active { background: #111; border-left-color: var(--text); }
-    
-    /* Terminal Output */
+
+    /* Terminal Panel: FILLS REMAINING SPACE (The "Yellow Box" Area) */
     .terminal-panel {
-      flex: 1; border-top: 1px solid var(--border); background: #020202; 
-      display: flex; flex-direction: column; min-height: 200px; max-height: 35vh;
+      flex: 1; /* Grows to fill all empty space */
+      display: flex; flex-direction: column; min-height: 0; background: #020202;
     }
-    .terminal-head { background: #080808; color: #888; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; }
-    .sys-log { flex: 1; padding: 10px; font-family: var(--mono); font-size: 10px; overflow-y: auto; color: #444; display: flex; flex-direction: column-reverse; }
-    .log-line { margin-bottom: 3px; word-break: break-all; }
+    .terminal-head { background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; border-top: 1px solid #222; }
+    .sys-log { 
+      flex: 1; padding: 12px; font-family: var(--mono); font-size: 10px; 
+      overflow-y: auto; color: #444; display: flex; flex-direction: column-reverse; /* Bottom-up log */
+    }
+    .log-line { margin-bottom: 3px; word-break: break-all; line-height: 1.4; }
     .cursor { display: inline-block; width: 6px; height: 10px; background: var(--accent); animation: blink 1s infinite; vertical-align: middle; margin-left: 4px; }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* 3. MAIN */
-    .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
+    /* 3. MAIN (Center) */
+    .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; overflow: hidden; }
     
     /* KPI Bar */
-    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); height: 70px; }
+    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); height: 70px; flex-shrink: 0; }
     .kpi-box { padding: 0 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
     .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
     .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
     .kpi-sub { font-size: 11px; color: #555; margin-top: 2px; }
 
-    /* Chart Area */
-    .chart-container { flex: 1; position: relative; width: 100%; background: var(--bg); }
+    /* Chart Area: Padding ensures Axis visibility */
+    .chart-container { 
+      flex: 1; position: relative; width: 100%; background: var(--bg); 
+      padding-bottom: 10px; /* Safety padding for X-axis */
+      min-height: 0; /* Important for flex child canvas */
+    }
 
-    /* 4. FEED */
+    /* 4. FEED (Right) */
     .feed-panel { grid-area: feed; background: #050505; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
     .feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
     .trade-row { 
@@ -112,7 +122,7 @@
           <div class="live-dot"></div>
           <span>MAGIC INTERNET MONEY</span>
         </div>
-        <div class="metric">INTERVAL: <span>2s SMOOTH</span></div>
+        <div class="metric">MODE: <span>2s SMOOTH</span></div>
         <div class="metric">LATENCY: <span id="ping">12ms</span></div>
         <div class="metric">GAS: <span id="gas">15</span></div>
       </div>
@@ -179,7 +189,6 @@
 <script>
 (function(){
   // --- CONFIG ---
-  // Expanded Watchlist
   const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'DOT', 'LINK', 'LTC', 'MATIC'];
   const WHALE_THRESHOLD = 20000;
   const PLOT_INTERVAL_MS = 2000; // 2 Seconds
@@ -203,7 +212,7 @@
         data: [],
         borderColor: '#fff',
         borderWidth: 2,
-        pointRadius: 3, // Visible points for the 2s intervals
+        pointRadius: 3,
         pointBackgroundColor: '#000',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
@@ -214,27 +223,33 @@
           return g;
         },
         fill: true,
-        tension: 0.3 // Smooth curves
+        tension: 0.3
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, 
-      // 1. Smooth Animation for the 2s glide
+      layout: {
+        padding: {
+          left: 0, right: 20, top: 20, bottom: 10 // Extra bottom padding for X-Axis visibility
+        }
+      },
       animation: {
-        duration: 1500, // 1.5s glide
+        duration: 1500, // Smooth glide
         easing: 'linear'
       },
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
         x: { 
-          display: true, // X-Axis Visible
+          display: true, 
           grid: { display: false, borderColor: '#333' },
           ticks: { 
             color: '#666', 
             font: { family: 'JetBrains Mono', size: 10 },
             maxTicksLimit: 6,
-            maxRotation: 0
+            maxRotation: 0,
+            autoSkip: true,
+            padding: 10 // Pushes labels up slightly
           }
         },
         y: { 
@@ -246,28 +261,30 @@
     }
   });
 
-  // --- LOGGING ---
+  // --- LOGGING ENGINE ---
   function log(msg, type='SYS') {
     const wrapper = document.getElementById('sysLogContainer');
     const div = document.createElement('div');
     div.className = 'log-line';
-    const ts = new Date().toLocaleTimeString().split(' ')[0];
+    const ts = new Date().toLocaleTimeString('en-GB'); // 24h format
     
-    let color = '#666';
+    let color = '#555';
     if(type === 'NET') color = '#0ecb81';
     if(type === 'ERR') color = '#f6465d';
     if(type === 'DATA') color = '#3b82f6';
+    if(type === 'HBEAT') color = '#444';
     
-    div.innerHTML = `<span style="color:${color}">[${type}]</span> ${ts} > ${msg}`;
+    div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
-    if(wrapper.children.length > 50) wrapper.lastChild.remove();
+    
+    // Allow more lines to keep the box looking full
+    if(wrapper.children.length > 100) wrapper.lastChild.remove();
   }
 
   // --- LOGIC ---
   function init() {
-    // Initial Boot Sequence Logs
-    setTimeout(() => log('Kernel Init...', 'SYS'), 100);
-    setTimeout(() => log('Loading Assets...', 'SYS'), 300);
+    log('Kernel Init Sequence...', 'SYS');
+    log('Mounting Chart.js Canvas...', 'SYS');
     
     const list = document.getElementById('coinList');
     
@@ -294,20 +311,22 @@
       list.appendChild(row);
     });
     
-    // Connect WebSocket
-    setTimeout(connect, 600);
+    // WebSocket Start
+    setTimeout(connect, 500);
     
-    // Start the 2-Second Plot Loop
+    // Start Plot Loop
     setInterval(plotTick, PLOT_INTERVAL_MS);
     
-    // Select default
-    setTimeout(() => loadCoin('BTC'), 800);
-    
-    // Mock Header Data
+    // Start Heartbeat Log (Fills the yellow box)
     setInterval(() => {
-      document.getElementById('ping').innerText = (12 + Math.random()*20).toFixed(0) + 'ms';
-      document.getElementById('gas').innerText = (10 + Math.random()*5).toFixed(0);
-    }, 2000);
+      const ms = (10 + Math.random()*15).toFixed(0);
+      const gas = (12 + Math.random()*5).toFixed(0);
+      log(`Heartbeat: ping=${ms}ms gas=${gas} gwei`, 'HBEAT');
+      document.getElementById('ping').innerText = `${ms}ms`;
+      document.getElementById('gas').innerText = `${gas}`;
+    }, 1000);
+
+    setTimeout(() => loadCoin('BTC'), 800);
   }
 
   function loadCoin(sym) {
@@ -315,18 +334,17 @@
     document.getElementById(`row-${sym}`).classList.add('active');
     
     STATE.active = sym;
-    log(`Switched view to ${sym}`, 'SYS');
+    log(`Switched Active Feed -> ${sym}`, 'SYS');
     document.getElementById('tradeFeed').innerHTML = ''; 
     
     const coin = STATE.coins[sym];
     
-    // Update chart without clearing completely if empty, just update datasets
-    // If we have history, show it.
+    // Preserve Chart Data
     chart.data.datasets[0].data = coin.history;
     chart.data.labels = coin.labels;
-    chart.update(); // Trigger animation to new state
+    chart.update(); 
 
-    // Theme Color
+    // Dynamic Colors
     const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
     const c = colors[sym] || '#ffffff';
     chart.data.datasets[0].borderColor = c;
@@ -345,10 +363,10 @@
     coin.price = price;
     if(price > coin.high) coin.high = price;
     
-    // Buffer for the next plot tick
+    // Buffer for plotting
     coin.lastBufferPrice = price;
 
-    // Immediate Sidebar Update
+    // Sidebar Update
     const pEl = document.getElementById(`p-${sym}`);
     if(pEl) {
       pEl.textContent = fmt(price);
@@ -362,11 +380,11 @@
     COINS.forEach(sym => {
       const coin = STATE.coins[sym];
       if(coin.lastBufferPrice !== null) {
-        const timeLabel = new Date().toLocaleTimeString('en-US', {hour12:false});
+        const timeLabel = new Date().toLocaleTimeString('en-GB'); // 24h format HH:mm:ss
         coin.history.push(coin.lastBufferPrice);
         coin.labels.push(timeLabel);
         
-        if(coin.history.length > 40) { 
+        if(coin.history.length > 30) { 
           coin.history.shift(); 
           coin.labels.shift(); 
         }
@@ -381,19 +399,16 @@
       const min = Math.min(...activeCoin.history);
       const max = Math.max(...activeCoin.history);
       const padding = (max - min) * 0.1;
-      // Smooth scale transition
+      
       chart.options.scales.y.min = min - padding;
       chart.options.scales.y.max = max + padding;
-      
-      chart.update(); // Animation config handles smooth transition
-      log(`Plot updated: ${activeCoin.history.length} pts`, 'DATA');
+      chart.update(); 
     }
   }
 
   function updateKPI(coin) {
     document.getElementById('kpiPrice').textContent = fmt(coin.price);
     document.getElementById('kpiHigh').textContent = fmt(coin.high);
-    // Placeholder volume as stream doesn't give 24h vol easily
     document.getElementById('kpiVol').textContent = '2.4B'; 
     if(coin.prev) {
       const pct = ((coin.price - coin.prev)/coin.prev)*100;
@@ -430,7 +445,7 @@
     const streams = COINS.map(c => c.toLowerCase()+'usdt@trade').join('/');
     const ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => log('Binance Feed Connected.', 'NET');
+    ws.onopen = () => log('Binance Data Stream Active.', 'NET');
     ws.onclose = () => { log('Connection lost. Retrying...', 'ERR'); setTimeout(connect, 3000); };
     
     ws.onmessage = (e) => {
@@ -450,7 +465,7 @@
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
     Object.values(STATE.coins).forEach(c => { c.history=[]; c.labels=[]; });
-    log(`Currency changed to ${STATE.currency}`, 'SYS');
+    log(`Rebasing Currency to ${STATE.currency}`, 'SYS');
   };
 
   init();
