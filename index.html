@@ -9,129 +9,175 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    /* MATTE BLACK THEME */
+    /* --- DATA PRODUCT THEME --- */
     :root { 
-      --bg: #141414;        
-      --panel: #1E1E1E;     
-      --border: #333333;    
-      --text-main: #E0E0E0; 
-      --text-dim: #888888;  
-      --green: #3bd671; 
-      --red: #ff5b5b;
+      --bg: #0F0F0F;          /* Darker, flatter background */
+      --panel: #161616;       /* Slightly lighter panels */
+      --border: #262626;      /* Subtle, professional borders */
+      --text-main: #EAEAEA; 
+      --text-muted: #666666;
+      --accent-blue: #3B82F6;
+      --success: #10B981;     /* Data product green */
+      --danger: #EF4444;      /* Data product red */
+      --font-mono: 'SF Mono', 'Roboto Mono', 'Menlo', monospace;
+      --font-sans: 'Inter', -apple-system, sans-serif;
     }
 
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; }
+    /* Reset & Base */
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow: hidden; }
     
-    .root { height: 100vh; display: flex; flex-direction: column; }
-    
-    /* Header */
-    header.appbar { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
-    
-    /* Layout */
-    .main { flex: 1; display: flex; gap: 20px; padding: 20px; overflow: hidden; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; }
-    
-    /* Chart Area */
-    .chart-panel { flex: 3; padding: 20px; position: relative; min-width: 0; }
-    .chart-container { flex: 1; position: relative; width: 100%; min-height: 0; }
-    
-    /* Sidebar */
-    .sidebar { flex: 1; max-width: 360px; display: flex; flex-direction: column; gap: 16px; min-width: 280px; }
-    
-    /* Coin Rows */
-    .coin-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-    .coin-row:hover { background: rgba(255,255,255,0.03); }
-    .coin-row.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
-    .coin-icon { width: 32px; height: 32px; border-radius: 50%; }
-    
-    /* Typography */
-    .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-    .price-lg { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
-    .price-sm { font-weight: 600; font-variant-numeric: tabular-nums; }
-    
-    /* Controls */
-    input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; outline: none; }
-    button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    button:hover { background: #444; }
-    button.primary { background: var(--text-main); color: #000; }
-    
-    /* Utils */
-    .flex-row { display: flex; align-items: center; gap: 10px; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; margin-right: 8px; }
+    /* Layout: CSS Grid for Dashboard */
+    .dashboard {
+      display: grid;
+      height: 100vh;
+      grid-template-rows: 56px 1fr; /* Header | Content */
+      grid-template-columns: 280px 1fr 280px; /* Sidebar | Main | Details */
+      grid-template-areas: 
+        "head head head"
+        "side main feed";
+    }
 
-    @media(max-width: 900px){ .main{ flex-direction: column; overflow-y: auto; } .chart-panel { height: 400px; flex: none; } }
+    /* Header */
+    .appbar { grid-area: head; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--panel); z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.02em; font-size: 15px; }
+    
+    /* Panels */
+    .panel-side { grid-area: side; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
+    .panel-main { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
+    .panel-feed { grid-area: feed; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
+
+    /* Components */
+    .kpi-row { display: flex; gap: 24px; padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
+    .kpi-item { display: flex; flex-direction: column; gap: 4px; }
+    .kpi-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
+    .kpi-value { font-family: var(--font-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    
+    .chart-wrap { flex: 1; position: relative; width: 100%; }
+
+    /* Tables & Lists */
+    .list-header { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    
+    .scroll-area { flex: 1; overflow-y: auto; }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    .coin-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; font-size: 13px; }
+    .coin-row:hover { background: #1f1f1f; }
+    .coin-row.active { background: #222; border-left: 2px solid var(--text-main); }
+    
+    .trade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 6px 16px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .trade-row span:last-child { text-align: right; }
+    .trade-row span:nth-child(2) { text-align: center; }
+
+    /* Controls */
+    .controls { display: flex; gap: 8px; }
+    button, select, input { background: #1A1A1A; border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; font-size: 12px; border-radius: 4px; outline: none; transition: border-color 0.2s; font-family: inherit; }
+    button:hover, select:hover, input:hover { border-color: #444; }
+    input::placeholder { color: #444; }
+    
+    /* Utilities */
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    .up { color: var(--success); }
+    .down { color: var(--danger); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; transition: background 0.3s; }
+
+    /* Mobile */
+    @media(max-width: 1000px){
+      .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px auto 1fr auto;
+        grid-template-areas: "head" "side" "main" "feed";
+        overflow-y: auto; height: auto;
+      }
+      .panel-side, .panel-feed { height: 300px; border: none; border-bottom: 1px solid var(--border); }
+      .chart-wrap { min-height: 400px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="root">
+  <div class="dashboard">
     <header class="appbar">
-      <div class="flex-row">
+      <div class="brand">
         <div id="statusDot" class="status-dot" title="Connecting..."></div>
-        <div style="font-weight:800; letter-spacing:-0.5px">Magic Internet Money</div>
+        <span>Magic Internet Money</span>
       </div>
-      
-      <div class="flex-row">
+      <div class="controls">
         <select id="currencySelector">
-          <option value="USDT">USDT</option>
-          <option value="USD">USD</option>
-          <option value="INR">INR</option>
+          <option value="USDT">USD (Tether)</option>
+          <option value="INR">INR (Rupee)</option>
         </select>
-        <button id="pauseBtn">Pause</button>
+        <button id="pauseBtn">Pause Stream</button>
       </div>
     </header>
 
-    <div class="main">
-      
-      <section class="chart-panel card">
-        <div style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end">
-          <div>
-            <div class="label" style="margin-bottom:6px">Live Price</div>
-            <div class="flex-row">
-              <span id="bigPrice" class="price-lg">Loading...</span>
-              <span id="bigChange" style="font-size:16px; font-weight:600">—</span>
-            </div>
-          </div>
-          <div class="label" id="activeSymbolName">BTC / USDT</div>
+    <aside class="panel-side">
+      <div class="list-header">Market Watch</div>
+      <div style="padding:12px; border-bottom:1px solid var(--border)">
+        <div style="display:flex; gap:6px">
+          <input type="text" id="newCoinInput" placeholder="ADD SYMBOL" style="width:100%; text-transform:uppercase">
+          <button id="addCoinBtn" style="font-weight:bold">+</button>
         </div>
+      </div>
+      <div id="watchlist" class="scroll-area"></div>
+    </aside>
 
-        <div class="chart-container">
-          <canvas id="chart"></canvas>
+    <main class="panel-main">
+      <div class="kpi-row">
+        <div class="kpi-item">
+          <div class="kpi-label">Last Price</div>
+          <div id="kpiPrice" class="kpi-value" style="font-size:24px; font-weight:700">Loading...</div>
         </div>
-      </section>
+        <div class="kpi-item">
+          <div class="kpi-label">24h Change</div>
+          <div id="kpiChange" class="kpi-value">—</div>
+        </div>
+        <div style="width:1px; background:var(--border); margin:0 8px"></div>
+        <div class="kpi-item">
+          <div class="kpi-label">Session High</div>
+          <div id="kpiHigh" class="kpi-value mono">—</div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-label">Session Low</div>
+          <div id="kpiLow" class="kpi-value mono">—</div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-label">Volume</div>
+          <div id="kpiVol" class="kpi-value mono" style="color:var(--text-muted)">—</div>
+        </div>
+      </div>
 
-      <aside class="sidebar">
-        <div class="card" style="padding:12px">
-          <div class="flex-row">
-            <input type="text" id="newCoinInput" placeholder="Symbol (e.g. SOL)" style="flex:1; text-transform:uppercase; font-weight:600">
-            <button id="addCoinBtn" class="primary">Add</button>
-          </div>
-        </div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+    </main>
 
-        <div class="card" style="flex:1; padding:0; overflow:hidden">
-          <div style="padding:16px; display:flex; justify-content:space-between; border-bottom:1px solid var(--border)">
-            <div class="label">Watchlist</div>
-            <div class="label" style="cursor:pointer" id="clearBtn">Reset</div>
-          </div>
-          <div id="watchlist" style="flex:1; overflow-y:auto; padding:8px"></div>
+    <aside class="panel-feed">
+      <div class="list-header">
+        <span>Time</span>
+        <span>Price</span>
+        <span>Vol</span>
+      </div>
+      <div id="tradeFeed" class="scroll-area">
         </div>
-      </aside>
-    </div>
+    </aside>
   </div>
 
 <script>
 (function(){
   // --- CONFIG ---
   const CONFIG = {
-    colors: { grid: '#2A2A2A', text: '#666', up: '#3bd671', down: '#ff5b5b' },
-    brandColors: { 
-      'BTC': '#f7931a', // Bitcoin Orange
-      'ETH': '#627eea', // Ethereum Blue
-      'SOL': '#14F195', 
-      'DOGE': '#cb9800' 
+    colors: { 
+      grid: '#262626', 
+      text: '#666', 
+      textMain: '#EAEAEA',
+      up: '#10B981', 
+      down: '#EF4444',
+      volBar: 'rgba(255,255,255,0.1)'
     },
-    defaultColor: '#ffffff',
-    maxPoints: 100,
+    brandColors: { 'BTC': '#F7931A', 'ETH': '#627EEA', 'SOL': '#14F195', 'DOGE': '#C2A633' },
+    defaultColor: '#FFFFFF',
+    maxPoints: 150,
     defaultCoins: ['BTC', 'ETH']
   };
 
@@ -144,60 +190,77 @@
     coins: {} 
   };
 
-  // --- UI ELEMENTS ---
+  // --- UI REFS ---
   const els = {
     chartCtx: document.getElementById('chart').getContext('2d'),
     watchlist: document.getElementById('watchlist'),
-    bigPrice: document.getElementById('bigPrice'),
-    bigChange: document.getElementById('bigChange'),
-    activeName: document.getElementById('activeSymbolName'),
+    tradeFeed: document.getElementById('tradeFeed'),
+    kpi: {
+      price: document.getElementById('kpiPrice'),
+      change: document.getElementById('kpiChange'),
+      high: document.getElementById('kpiHigh'),
+      low: document.getElementById('kpiLow'),
+      vol: document.getElementById('kpiVol')
+    },
     status: document.getElementById('statusDot')
   };
 
-  // --- CHART INITIALIZATION ---
-  // Helper to create gradient based on current active color
+  // --- CHART (Mixed Type: Line + Bar) ---
   function getGradient(ctx, area, color) {
-    const gradient = ctx.createLinearGradient(0, area.top, 0, area.bottom);
-    gradient.addColorStop(0, color + '60'); // 40% opacity at top
-    gradient.addColorStop(1, color + '00'); // 0% opacity at bottom
-    return gradient;
+    const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
+    g.addColorStop(0, color + '40'); 
+    g.addColorStop(1, color + '00'); 
+    return g;
   }
 
   const chart = new Chart(els.chartCtx, {
     type: 'line',
     data: {
       labels: [], 
-      datasets: [{
-        label: 'Price',
-        data: [],
-        borderColor: CONFIG.brandColors.BTC, // Default start
-        borderWidth: 2,
-        tension: 0.4, 
-        pointRadius: 0,
-        fill: true,
-        backgroundColor: null // Set dynamically
-      }]
+      datasets: [
+        {
+          type: 'line',
+          label: 'Price',
+          data: [],
+          borderColor: CONFIG.brandColors.BTC,
+          borderWidth: 2,
+          tension: 0.3, 
+          pointRadius: 0,
+          fill: true,
+          yAxisID: 'y'
+        },
+        {
+          type: 'bar',
+          label: 'Volume',
+          data: [],
+          backgroundColor: CONFIG.colors.volBar,
+          barThickness: 2,
+          yAxisID: 'y1'
+        }
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { enabled: true, intersect: false } },
+      plugins: { legend: { display: false }, tooltip: { enabled: true, mode: 'index' } },
       scales: {
         x: { 
-          display: true, // X-AXIS ENABLED
-          ticks: { 
-            maxTicksLimit: 6, 
-            color: '#444', 
-            maxRotation: 0 
-          },
-          grid: { display: false }
+          display: true, 
+          grid: { display: false },
+          ticks: { maxTicksLimit: 6, color: '#444', maxRotation:0, font: {family: 'monospace'} }
         },
         y: {
           position: 'right',
           grid: { color: CONFIG.colors.grid },
-          ticks: { color: CONFIG.colors.text, callback: (v) => v.toLocaleString() }
+          ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() }
+        },
+        y1: {
+          display: false, // Hidden volume axis
+          position: 'left',
+          min: 0,
+          max: 100 // Dynamic
         }
       }
     }
@@ -210,8 +273,10 @@
     
     state.coins[symbol] = {
       price: 0, prev: 0,
-      history: [], labels: [],
-      // Assign brand color or default
+      sessionHigh: -Infinity,
+      sessionLow: Infinity,
+      sessionVol: 0,
+      history: [], volumes: [], labels: [],
       color: CONFIG.brandColors[symbol] || CONFIG.defaultColor
     };
 
@@ -225,109 +290,133 @@
     div.id = `row-${symbol}`;
     div.onclick = () => switchCoin(symbol);
     
-    const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${symbol.toLowerCase()}.svg`;
-    
     div.innerHTML = `
-      <img src="${icon}" class="coin-icon" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg'">
-      <div style="flex:1">
+      <div style="display:flex; align-items:center; gap:10px">
+        <div style="width:8px; height:8px; border-radius:50%; background:${state.coins[symbol].color}"></div>
         <div style="font-weight:600">${symbol}</div>
-        <div class="label" style="font-size:10px">USDT</div>
       </div>
-      <div style="text-align:right">
-        <div class="price-sm" id="price-${symbol}">...</div>
-        <div class="label" id="change-${symbol}">—</div>
+      <div class="mono">
+        <div id="price-${symbol}">--</div>
+        <div id="change-${symbol}" style="font-size:10px; text-align:right; opacity:0.7">--</div>
       </div>
     `;
     els.watchlist.appendChild(div);
   }
 
   function switchCoin(symbol) {
-    // 1. Highlight UI
+    // UI Highlight
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     const row = document.getElementById(`row-${symbol}`);
     if(row) row.classList.add('active');
 
     state.activeSymbol = symbol;
-    els.activeName.textContent = `${symbol} / ${state.currency}`;
+    
+    // Clear Feed
+    els.tradeFeed.innerHTML = ''; 
 
-    // 2. Update Chart Theme (Color)
+    // Update Chart Theme
     const coin = state.coins[symbol];
     chart.data.datasets[0].borderColor = coin.color;
-    // We clear the background so it regenerates with new color on next render
-    chart.data.datasets[0].backgroundColor = (context) => {
-      const {ctx, chartArea} = context.chart;
+    chart.data.datasets[0].backgroundColor = (ctx) => {
+      const {chartArea} = ctx.chart;
       if (!chartArea) return null;
-      return getGradient(ctx, chartArea, coin.color);
+      return getGradient(ctx.chart.ctx, chartArea, coin.color);
     };
 
-    // 3. Update Data
-    if (coin.history.length > 0) {
-      updateChart(coin.labels, coin.history);
-      updateHeader(coin.price, coin.prev);
-    } else {
-      updateChart([], []);
-      els.bigPrice.textContent = "Loading...";
-    }
+    // Render Data
+    updateKPIs(coin);
+    updateChart(coin);
   }
 
-  function handleTick(symbol, price, time) {
+  function handleTick(symbol, price, vol, time) {
     if(!state.coins[symbol]) return;
     const coin = state.coins[symbol];
     
     coin.prev = coin.price;
     coin.price = price;
     
+    // Session Stats
+    if(price > coin.sessionHigh) coin.sessionHigh = price;
+    if(price < coin.sessionLow) coin.sessionLow = price;
+    coin.sessionVol += vol;
+
+    // History
     const localPrice = price * state.rate;
     const timeLabel = new Date(time).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
-
+    
     coin.history.push(localPrice);
+    coin.volumes.push(vol);
     coin.labels.push(timeLabel);
     
     if(coin.history.length > CONFIG.maxPoints) {
       coin.history.shift();
+      coin.volumes.shift();
       coin.labels.shift();
     }
 
-    // Sidebar Updates
+    // --- DOM UPDATES ---
+    
+    // 1. Sidebar Row
     const pEl = document.getElementById(`price-${symbol}`);
     const cEl = document.getElementById(`change-${symbol}`);
     if(pEl) pEl.textContent = fmt(price);
-    
     if(cEl && coin.prev) {
       const pct = ((price - coin.prev)/coin.prev) * 100;
       cEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      cEl.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
+      cEl.className = pct >= 0 ? 'up' : 'down';
     }
 
-    // Chart Updates (Active Only)
+    // 2. Active View Updates
     if(symbol === state.activeSymbol && !state.paused) {
-      updateHeader(coin.price, coin.prev);
-      updateChart(coin.labels, coin.history);
+      updateKPIs(coin);
+      updateChart(coin);
+      addTradeRow(price, vol, time);
     }
   }
 
-  function updateChart(labels, data) {
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = data;
+  function updateKPIs(coin) {
+    els.kpi.price.textContent = fmt(coin.price);
     
-    if(data.length > 2) {
-      const min = Math.min(...data);
-      const max = Math.max(...data);
-      const padding = (max - min) * 0.1;
-      chart.options.scales.y.min = min - padding;
-      chart.options.scales.y.max = max + padding;
+    if(coin.prev) {
+      const pct = ((coin.price - coin.prev)/coin.prev) * 100;
+      els.kpi.change.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      els.kpi.change.className = `kpi-value ${pct >= 0 ? 'up' : 'down'}`;
+    }
+
+    els.kpi.high.textContent = coin.sessionHigh > 0 ? fmt(coin.sessionHigh) : '—';
+    els.kpi.low.textContent = coin.sessionLow < Infinity ? fmt(coin.sessionLow) : '—';
+    els.kpi.vol.textContent = coin.sessionVol.toFixed(2);
+    
+    document.title = `${fmt(coin.price)} ${state.activeSymbol}`;
+  }
+
+  function updateChart(coin) {
+    chart.data.labels = coin.labels;
+    chart.data.datasets[0].data = coin.history;
+    chart.data.datasets[1].data = coin.volumes;
+
+    // Scaling
+    if(coin.history.length > 2) {
+      const min = Math.min(...coin.history);
+      const max = Math.max(...coin.history);
+      const pad = (max - min) * 0.1;
+      chart.options.scales.y.min = min - pad;
+      chart.options.scales.y.max = max + pad;
+      
+      // Volume scaling (make bars fill bottom 20% only)
+      const maxVol = Math.max(...coin.volumes);
+      chart.options.scales.y1.max = maxVol * 5; 
     }
     chart.update('none');
   }
 
-  function updateHeader(price, prev) {
-    els.bigPrice.textContent = fmt(price);
-    document.title = `${fmt(price)} ${state.activeSymbol}`;
-    if(prev) {
-      const pct = ((price - prev)/prev) * 100;
-      els.bigChange.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      els.bigChange.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
-    }
+  function addTradeRow(price, vol, time) {
+    const div = document.createElement('div');
+    div.className = 'trade-row';
+    const t = new Date(time).toLocaleTimeString([], { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    div.innerHTML = `<span>${t}</span><span class="${Math.random()>0.5?'up':'down'}">${fmt(price)}</span><span>${vol.toFixed(4)}</span>`;
+    els.tradeFeed.prepend(div);
+    if(els.tradeFeed.children.length > 50) els.tradeFeed.lastChild.remove();
   }
 
   // --- WEBSOCKET ---
@@ -343,7 +432,8 @@
       const msg = JSON.parse(e.data);
       if(msg.data && msg.data.s) {
         const symbol = msg.data.s.replace('USDT','');
-        handleTick(symbol, parseFloat(msg.data.p), msg.data.T);
+        // Binance 'q' is quantity (volume)
+        handleTick(symbol, parseFloat(msg.data.p), parseFloat(msg.data.q), msg.data.T);
       }
     };
   }
@@ -370,26 +460,23 @@
       document.getElementById('newCoinInput').value = '';
     }
   });
-  
-  // Enter key support for input
-  document.getElementById('newCoinInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') document.getElementById('addCoinBtn').click();
+
+  document.getElementById('newCoinInput').addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') document.getElementById('addCoinBtn').click();
   });
 
   document.getElementById('currencySelector').addEventListener('change', (e) => {
     state.currency = e.target.value;
     state.rate = e.target.value === 'INR' ? 86.5 : 1;
-    Object.values(state.coins).forEach(c => { c.history = []; c.labels = []; }); // Reset histories
-    chart.data.datasets[0].data = [];
-    chart.update();
+    // Clear histories
+    Object.values(state.coins).forEach(c => { c.history=[]; c.volumes=[]; c.labels=[]; });
+    updateChart(state.coins[state.activeSymbol]);
   });
 
   document.getElementById('pauseBtn').addEventListener('click', function(){
     state.paused = !state.paused;
     this.textContent = state.paused ? 'Resume' : 'Pause';
   });
-
-  document.getElementById('clearBtn').addEventListener('click', () => location.reload());
 
   // Init
   CONFIG.defaultCoins.forEach(initCoin);
