@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIM | Data Dense Terminal</title>
+  <title>MIM | Perfect Fit Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- DATA DENSE THEME --- */
+    /* --- PERFECT FIT THEME --- */
     :root { 
       --bg: #000000;          
       --panel: #0b0b0b;       
@@ -25,7 +25,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; overflow: hidden; }
 
-    /* LAYOUT */
+    /* LAYOUT: Fixed Header + 3 Columns */
     .dashboard {
       display: grid;
       height: 100vh;
@@ -48,16 +48,22 @@
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
     /* 2. SIDEBAR (Left) */
-    .sidebar { grid-area: side; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; }
+    .sidebar { 
+      grid-area: side; background: #050505; border-right: 1px solid var(--border); 
+      display: flex; flex-direction: column; height: 100%; min-height: 0;
+    }
     
     .sec-head { 
       padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
-      background: var(--panel); display: flex; justify-content: space-between; align-items: center;
+      background: var(--panel); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
     }
     
-    /* Coin List: Takes top 50% max, shrinks if needed */
-    .coin-list { flex: 0 1 auto; max-height: 50%; overflow-y: auto; border-bottom: 1px solid var(--border); }
+    /* Coin List: Fixed height ratio to ensure space for terminal */
+    .coin-list { 
+      flex: 0 0 45%; /* Takes exactly 45% of sidebar height */
+      overflow-y: auto; border-bottom: 1px solid var(--border); 
+    }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
       padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
@@ -66,12 +72,13 @@
     .coin-row:hover { background: #111; }
     .coin-row.active { background: #111; border-left-color: var(--text); }
 
-    /* Terminal Panel: FILLS REMAINING SPACE (The "Yellow Box" Area) */
+    /* Terminal Panel: EXPANDS to fill bottom (The "Yellow Box" Area) */
     .terminal-panel {
-      flex: 1; /* Grows to fill all empty space */
-      display: flex; flex-direction: column; min-height: 0; background: #020202;
+      flex: 1; /* Grows to fill the rest of the sidebar */
+      display: flex; flex-direction: column; 
+      background: #020202; min-height: 0;
     }
-    .terminal-head { background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; border-top: 1px solid #222; }
+    .terminal-head { background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; flex-shrink: 0; }
     .sys-log { 
       flex: 1; padding: 12px; font-family: var(--mono); font-size: 10px; 
       overflow-y: auto; color: #444; display: flex; flex-direction: column-reverse; /* Bottom-up log */
@@ -90,11 +97,10 @@
     .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
     .kpi-sub { font-size: 11px; color: #555; margin-top: 2px; }
 
-    /* Chart Area: Padding ensures Axis visibility */
+    /* Chart Area */
     .chart-container { 
       flex: 1; position: relative; width: 100%; background: var(--bg); 
-      padding-bottom: 10px; /* Safety padding for X-axis */
-      min-height: 0; /* Important for flex child canvas */
+      min-height: 0;
     }
 
     /* 4. FEED (Right) */
@@ -191,7 +197,7 @@
   // --- CONFIG ---
   const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'DOT', 'LINK', 'LTC', 'MATIC'];
   const WHALE_THRESHOLD = 20000;
-  const PLOT_INTERVAL_MS = 2000; // 2 Seconds
+  const PLOT_INTERVAL_MS = 2000; 
   
   const STATE = {
     active: 'BTC',
@@ -228,9 +234,10 @@
     },
     options: {
       responsive: true, maintainAspectRatio: false, 
+      // PADDING FIX FOR X-AXIS
       layout: {
         padding: {
-          left: 0, right: 20, top: 20, bottom: 10 // Extra bottom padding for X-Axis visibility
+          left: 10, right: 30, top: 20, bottom: 30 // Increased bottom padding
         }
       },
       animation: {
@@ -249,7 +256,7 @@
             maxTicksLimit: 6,
             maxRotation: 0,
             autoSkip: true,
-            padding: 10 // Pushes labels up slightly
+            padding: 15 // Pushes labels further up from edge
           }
         },
         y: { 
@@ -266,7 +273,7 @@
     const wrapper = document.getElementById('sysLogContainer');
     const div = document.createElement('div');
     div.className = 'log-line';
-    const ts = new Date().toLocaleTimeString('en-GB'); // 24h format
+    const ts = new Date().toLocaleTimeString('en-GB'); 
     
     let color = '#555';
     if(type === 'NET') color = '#0ecb81';
@@ -277,14 +284,18 @@
     div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
     
-    // Allow more lines to keep the box looking full
     if(wrapper.children.length > 100) wrapper.lastChild.remove();
   }
 
   // --- LOGIC ---
   function init() {
-    log('Kernel Init Sequence...', 'SYS');
-    log('Mounting Chart.js Canvas...', 'SYS');
+    // RAPID BOOT SEQUENCE to populate terminal
+    setTimeout(() => log('BIOS Check... OK', 'SYS'), 0);
+    setTimeout(() => log('Mounting Virtual DOM...', 'SYS'), 100);
+    setTimeout(() => log('Initializing Chart.js Canvas...', 'SYS'), 200);
+    setTimeout(() => log('Allocating Memory Buffers...', 'SYS'), 300);
+    setTimeout(() => log('Network Interface... UP', 'NET'), 400);
+    setTimeout(() => log('Connecting to Binance WebSocket API...', 'NET'), 500);
     
     const list = document.getElementById('coinList');
     
@@ -311,20 +322,15 @@
       list.appendChild(row);
     });
     
-    // WebSocket Start
-    setTimeout(connect, 500);
-    
-    // Start Plot Loop
+    setTimeout(connect, 600);
     setInterval(plotTick, PLOT_INTERVAL_MS);
     
-    // Start Heartbeat Log (Fills the yellow box)
+    // Heartbeat for populated look
     setInterval(() => {
       const ms = (10 + Math.random()*15).toFixed(0);
-      const gas = (12 + Math.random()*5).toFixed(0);
-      log(`Heartbeat: ping=${ms}ms gas=${gas} gwei`, 'HBEAT');
+      log(`Heartbeat: ping=${ms}ms stable`, 'HBEAT');
       document.getElementById('ping').innerText = `${ms}ms`;
-      document.getElementById('gas').innerText = `${gas}`;
-    }, 1000);
+    }, 1200);
 
     setTimeout(() => loadCoin('BTC'), 800);
   }
@@ -334,12 +340,11 @@
     document.getElementById(`row-${sym}`).classList.add('active');
     
     STATE.active = sym;
-    log(`Switched Active Feed -> ${sym}`, 'SYS');
+    log(`Feed Switched -> ${sym}`, 'SYS');
     document.getElementById('tradeFeed').innerHTML = ''; 
     
     const coin = STATE.coins[sym];
     
-    // Preserve Chart Data
     chart.data.datasets[0].data = coin.history;
     chart.data.labels = coin.labels;
     chart.update(); 
@@ -363,10 +368,8 @@
     coin.price = price;
     if(price > coin.high) coin.high = price;
     
-    // Buffer for plotting
     coin.lastBufferPrice = price;
 
-    // Sidebar Update
     const pEl = document.getElementById(`p-${sym}`);
     if(pEl) {
       pEl.textContent = fmt(price);
@@ -380,7 +383,7 @@
     COINS.forEach(sym => {
       const coin = STATE.coins[sym];
       if(coin.lastBufferPrice !== null) {
-        const timeLabel = new Date().toLocaleTimeString('en-GB'); // 24h format HH:mm:ss
+        const timeLabel = new Date().toLocaleTimeString('en-GB');
         coin.history.push(coin.lastBufferPrice);
         coin.labels.push(timeLabel);
         
@@ -441,11 +444,11 @@
   }
 
   function connect() {
-    log('Opening WebSocket Uplink...', 'NET');
+    log('Attempting Handshake...', 'NET');
     const streams = COINS.map(c => c.toLowerCase()+'usdt@trade').join('/');
     const ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => log('Binance Data Stream Active.', 'NET');
+    ws.onopen = () => log('Stream Lock Established.', 'NET');
     ws.onclose = () => { log('Connection lost. Retrying...', 'ERR'); setTimeout(connect, 3000); };
     
     ws.onmessage = (e) => {
