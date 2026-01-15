@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIM | Polished Terminal</title>
+  <title>MIM | Commander Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- POLISHED THEME --- */
+    /* --- COMMANDER THEME --- */
     :root { 
       --bg: #000000;          
       --panel: #0b0b0b;       
@@ -46,7 +46,6 @@
     .metric { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-left: 1px solid #222; padding-left: 12px; }
     .metric span { color: var(--text); font-weight: 600; }
     
-    /* LOGO REPLACEMENT */
     .logo-svg { width: 20px; height: 20px; filter: drop-shadow(0 0 5px rgba(247, 147, 26, 0.4)); }
 
     /* 2. SIDEBAR */
@@ -56,9 +55,7 @@
     }
     
     .sec-head { 
-      flex: 0 0 auto; 
-      padding: 8px 12px; border-bottom: 1px solid var(--border);
-      background: var(--panel);
+      flex: 0 0 auto; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--panel);
     }
     #searchInput {
       width: 100%; background: #111; border: 1px solid #222; color: #fff;
@@ -67,16 +64,13 @@
     }
     #searchInput:focus { border-color: #444; }
     
-    /* Coin List: HIDDEN SCROLLBAR */
+    /* Coin List */
     .coin-list { 
-      flex: 0 1 auto; /* Fit content, don't hog space */
-      overflow-y: auto; border-bottom: 1px solid var(--border); 
+      flex: 0 1 auto; overflow-y: auto; border-bottom: 1px solid var(--border); 
       max-height: 60vh; min-height: 0;
-      /* Hide Scrollbar */
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
+      scrollbar-width: none;
     }
-    .coin-list::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+    .coin-list::-webkit-scrollbar { display: none; }
 
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
@@ -91,8 +85,7 @@
     
     /* Terminal */
     .terminal-panel {
-      flex: 1; /* Fills the rest of the height */
-      display: flex; flex-direction: column; background: #020202; min-height: 0;
+      flex: 1; display: flex; flex-direction: column; background: #020202; min-height: 0;
     }
     .terminal-head { flex: 0 0 auto; background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; border-top: 1px solid #222; }
     .sys-log { 
@@ -109,15 +102,20 @@
       position: relative; min-width: 0; min-height: 0; overflow: hidden;
     }
     
-    /* KPI Bar */
-    .kpi-bar { 
-      flex: 0 0 70px; display: grid; grid-template-columns: repeat(4, 1fr); 
-      border-bottom: 1px solid var(--border); background: var(--panel); 
+    /* Toolbar (New Feature) */
+    .chart-toolbar {
+      flex: 0 0 36px; border-bottom: 1px solid var(--border); background: var(--panel);
+      display: flex; align-items: center; padding: 0 16px; gap: 12px;
     }
-    .kpi-box { padding: 0 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-    .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; white-space: nowrap; }
-    .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; white-space: nowrap; }
-    .kpi-sub { font-size: 11px; color: #555; margin-top: 2px; }
+    .tf-btn {
+      background: transparent; border: 1px solid #333; color: #666; font-size: 10px;
+      padding: 2px 8px; border-radius: 4px; cursor: pointer; font-family: var(--mono);
+      transition: 0.2s;
+    }
+    .tf-btn:hover { color: #fff; border-color: #555; }
+    .tf-btn.active { background: #222; color: var(--accent); border-color: var(--accent); font-weight: 700; }
+    
+    .divider { width: 1px; height: 16px; background: #333; }
 
     /* Chart */
     .chart-container { 
@@ -125,21 +123,29 @@
       padding-bottom: 10px; min-height: 0; 
     }
 
-    /* 4. FEED */
+    /* 4. FEED (Visual Volume) */
     .feed-panel { 
       grid-area: feed; background: #050505; border-left: 1px solid var(--border); 
       display: flex; flex-direction: column; height: 100%; overflow: hidden;
     }
     .feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    
     .trade-row { 
-      display: grid; grid-template-columns: 50px 1fr 60px; gap: 10px;
-      padding: 5px 14px; font-family: var(--mono); font-size: 10px; 
-      color: var(--text-dim); border-bottom: 1px solid #0e0e0e; align-items: center;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 24px; padding: 0 12px; position: relative;
+      font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+      border-bottom: 1px solid #0e0e0e; overflow: hidden;
     }
-    .trade-whale { background: rgba(255, 255, 255, 0.05); border-left: 2px solid #fff; }
-
+    /* Visual Volume Bar Background */
+    .vol-bar {
+      position: absolute; top: 0; bottom: 0; right: 0; opacity: 0.15; z-index: 0;
+      transition: width 0.2s;
+    }
+    .row-content { position: relative; z-index: 1; display: flex; width: 100%; justify-content: space-between; }
+    
     /* UTILS */
     .up { color: var(--green); } .down { color: var(--red); }
+    .bg-up { background: var(--green); } .bg-down { background: var(--red); }
 
     @media(max-width: 1000px){ .dashboard { display: flex; flex-direction: column; height: auto; overflow: auto; } .chart-container { height: 350px; } }
   </style>
@@ -153,8 +159,7 @@
         <span class="brand">Magic Internet Money</span>
       </div>
       <div class="brand-group">
-        <div class="metric">MODE: <span>2s SMOOTH</span></div>
-        <div class="metric">LATENCY: <span id="ping">12ms</span></div>
+        <div class="metric">PING: <span id="ping">12ms</span></div>
         <div class="metric">GAS: <span id="gas">15</span></div>
       </div>
       <div>
@@ -182,27 +187,17 @@
     </aside>
 
     <main class="main-panel">
-      <div class="kpi-bar">
-        <div class="kpi-box">
-          <div class="kpi-lbl">Mark Price</div>
-          <div id="kpiPrice" class="kpi-val" style="color:#fff">---</div>
-          <div class="kpi-sub">Real-time</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-lbl">24h Change</div>
-          <div id="kpiChange" class="kpi-val">---</div>
-          <div class="kpi-sub">Rolling Window</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-lbl">24h Volume</div>
-          <div id="kpiVol" class="kpi-val">---</div>
-          <div class="kpi-sub">USDT Notional</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-lbl">24h High</div>
-          <div id="kpiHigh" class="kpi-val">---</div>
-          <div class="kpi-sub">Global Average</div>
-        </div>
+      <div class="chart-toolbar">
+        <button class="tf-btn active" onclick="setTimeframe('1m', this)">1m</button>
+        <button class="tf-btn" onclick="setTimeframe('5m', this)">5m</button>
+        <button class="tf-btn" onclick="setTimeframe('15m', this)">15m</button>
+        <button class="tf-btn" onclick="setTimeframe('1h', this)">1H</button>
+        <div class="divider"></div>
+        <button class="tf-btn" id="smaBtn" onclick="toggleSMA()">SMA: OFF</button>
+        <div style="flex:1"></div>
+        <div class="metric">O: <span id="kpiO">--</span></div>
+        <div class="metric">H: <span id="kpiH">--</span></div>
+        <div class="metric">L: <span id="kpiL">--</span></div>
       </div>
       
       <div class="chart-container">
@@ -223,13 +218,14 @@
 (function(){
   // --- CONFIG ---
   const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'DOT', 'LINK', 'LTC', 'MATIC', 'NEAR', 'UNI', 'ATOM'];
-  const WHALE_THRESHOLD = 20000;
-  const PLOT_INTERVAL_MS = 2000; 
+  const MAX_VOLUME_SCALE = 50000; // Reference for bar width
   
   const STATE = {
     active: 'BTC',
     currency: 'USDT',
     rate: 1,
+    timeframe: '1m',
+    showSMA: false,
     coins: {} 
   };
 
@@ -240,44 +236,67 @@
     type: 'line',
     data: {
       labels: [],
-      datasets: [{
-        label: 'Price',
-        data: [],
-        borderColor: '#fff',
-        borderWidth: 2,
-        pointRadius: 3,
-        pointBackgroundColor: '#000',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        backgroundColor: (ctx) => {
-          const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
-          g.addColorStop(0, 'rgba(255,255,255,0.15)');
-          g.addColorStop(1, 'rgba(0,0,0,0)');
-          return g;
+      datasets: [
+        {
+          label: 'Price',
+          data: [],
+          borderColor: '#fff',
+          borderWidth: 2,
+          pointRadius: 0,
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+            g.addColorStop(0, 'rgba(255,255,255,0.15)');
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            return g;
+          },
+          fill: true,
+          tension: 0.2,
+          order: 2
         },
-        fill: true,
-        tension: 0.3
-      }]
+        {
+          label: 'SMA 20',
+          data: [],
+          borderColor: '#F0B90B', // Yellow SMA
+          borderWidth: 1,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.4,
+          hidden: true,
+          order: 1
+        }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false, 
       layout: { padding: { left: 0, right: 20, top: 20, bottom: 40 } },
-      animation: { duration: 1500, easing: 'linear' },
+      animation: { duration: 0 }, // We control redraws manually for performance
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
         x: { 
           display: true, grid: { display: false, borderColor: '#333' },
-          ticks: { color: '#666', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 6, maxRotation: 0, autoSkip: true, padding: 15 }
+          ticks: { color: '#666', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 8, maxRotation: 0, autoSkip: true, padding: 15 }
         },
         y: { 
           position: 'right', grid: { color: '#1a1a1a' }, 
-          // FIX: MATCH FONT
           ticks: { color: '#555', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v.toLocaleString() } 
         }
       }
     }
   });
+
+  // --- SMA CALC ---
+  function calculateSMA(data, window) {
+    if(!data || data.length < window) return [];
+    let sma = [];
+    for(let i=0; i<data.length; i++) {
+      if(i < window-1) { sma.push(null); continue; }
+      let sum = 0;
+      for(let j=0; j<window; j++) sum += data[i-j];
+      sma.push(sum/window);
+    }
+    return sma;
+  }
 
   // --- LOGGING ---
   function log(msg, type='SYS') {
@@ -285,93 +304,87 @@
     const div = document.createElement('div');
     div.className = 'log-line';
     const ts = new Date().toLocaleTimeString('en-GB'); 
-    
     let color = '#555';
     if(type === 'NET') color = '#0ecb81';
     if(type === 'ERR') color = '#f6465d';
-    if(type === 'DATA') color = '#3b82f6';
-    if(type === 'HBEAT') color = '#444';
-    
     div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
     if(wrapper.children.length > 100) wrapper.lastChild.remove();
   }
 
-  // --- DATA LOADING (Robust) ---
-  async function fetchMarketData() {
-    log('Syncing global markets...', 'NET');
-    
-    // 1. Fetch 24h Stats
+  // --- DATA ENGINE ---
+  async function fetchHistory(sym, tf) {
+    log(`Fetching ${tf} candles for ${sym}...`, 'NET');
     try {
-      const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-      const allStats = await res.json();
-      COINS.forEach(sym => {
-        const pair = `${sym}USDT`;
-        const stat = allStats.find(s => s.symbol === pair);
-        if(stat) {
-          STATE.coins[sym].stats = {
-            change: parseFloat(stat.priceChangePercent),
-            vol: parseFloat(stat.quoteVolume),
-            high: parseFloat(stat.highPrice)
-          };
-          const chgEl = document.getElementById(`chg-${sym}`);
-          if(chgEl) {
-            const chg = STATE.coins[sym].stats.change;
-            chgEl.textContent = (chg > 0 ? '+' : '') + chg.toFixed(2) + '%';
-            chgEl.style.color = chg >= 0 ? '#0ecb81' : '#f6465d';
-          }
-        }
-      });
-    } catch(e) { log('Stats sync failed', 'ERR'); }
-
-    // 2. Fetch History (Parallel)
-    const promises = COINS.map(async (sym) => {
-      await fetchHistoryForCoin(sym);
-    });
-    await Promise.all(promises);
-    log('Data Grid Synchronized.', 'SYS');
-  }
-
-  async function fetchHistoryForCoin(sym) {
-    try {
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=1m&limit=60`);
+      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=100`);
       const data = await res.json();
-      const coin = STATE.coins[sym];
       
-      // Clear to avoid duplicates if re-fetched
-      coin.history = []; coin.labels = [];
+      const prices = [];
+      const labels = [];
       
-      data.forEach(k => {
-        const price = parseFloat(k[4]); 
-        const timeLabel = new Date(k[0]).toLocaleTimeString('en-GB');
-        coin.history.push(price);
-        coin.labels.push(timeLabel);
-        coin.price = price;
-      });
-      
-      const pEl = document.getElementById(`p-${sym}`);
-      if(pEl) pEl.textContent = fmt(coin.price);
+      // We need OHLC for header (taking last candle)
+      const last = data[data.length-1];
+      if(last) {
+        document.getElementById('kpiO').innerText = fmt(parseFloat(last[1]));
+        document.getElementById('kpiH').innerText = fmt(parseFloat(last[2]));
+        document.getElementById('kpiL').innerText = fmt(parseFloat(last[3]));
+      }
 
-      // If this is the active coin, force refresh immediately
-      if(sym === STATE.active) loadCoin(sym, false);
-      
-    } catch(e) {}
+      data.forEach(k => {
+        prices.push(parseFloat(k[4]));
+        labels.push(new Date(k[0]).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}));
+      });
+
+      return { prices, labels };
+    } catch(e) {
+      log('Fetch Error', 'ERR');
+      return null;
+    }
   }
 
-  // --- LOGIC ---
-  function init() {
-    setTimeout(() => log('Kernel Init...', 'SYS'), 0);
-    setTimeout(() => log('Mounting Virtual DOM...', 'SYS'), 50);
+  window.setTimeframe = async function(tf, btn) {
+    // UI Update
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
     
-    const list = document.getElementById('coinList');
-    
-    COINS.forEach(sym => {
-      STATE.coins[sym] = { 
-        price: 0, prev: 0, high: 0, vol: 0,
-        history: [], labels: [], lastBufferPrice: null,
-        stats: { change: 0, vol: 0, high: 0 }
-      };
+    STATE.timeframe = tf;
+    const data = await fetchHistory(STATE.active, tf);
+    if(data) {
+      chart.data.datasets[0].data = data.prices;
+      chart.data.labels = data.labels;
       
+      // Update SMA if active
+      if(STATE.showSMA) {
+        chart.data.datasets[1].data = calculateSMA(data.prices, 20);
+      }
+      
+      chart.update();
+    }
+  }
+
+  window.toggleSMA = function() {
+    STATE.showSMA = !STATE.showSMA;
+    const btn = document.getElementById('smaBtn');
+    btn.innerText = `SMA: ${STATE.showSMA ? 'ON' : 'OFF'}`;
+    btn.style.color = STATE.showSMA ? '#F0B90B' : '#666';
+    btn.style.borderColor = STATE.showSMA ? '#F0B90B' : '#333';
+    
+    chart.data.datasets[1].hidden = !STATE.showSMA;
+    if(STATE.showSMA) {
+      const prices = chart.data.datasets[0].data;
+      chart.data.datasets[1].data = calculateSMA(prices, 20);
+    }
+    chart.update();
+  }
+
+  // --- INITIALIZATION ---
+  async function init() {
+    log('System Boot...', 'SYS');
+    
+    // Init List
+    const list = document.getElementById('coinList');
+    COINS.forEach(sym => {
+      STATE.coins[sym] = { price: 0 };
       const row = document.createElement('div');
       row.className = 'coin-row';
       row.id = `row-${sym}`;
@@ -383,192 +396,128 @@
         </div>
         <div class="row-meta">
           <div id="p-${sym}" class="row-price">...</div>
-          <div id="chg-${sym}" class="row-chg">...</div>
         </div>
       `;
       list.appendChild(row);
     });
+
+    // 1. Initial Data Fetch
+    // We only fetch history for the active coin (BTC) initially to be fast
+    // Others will load price on WS tick or on click
+    await loadCoin('BTC');
     
+    // 2. Connect WS
+    connect();
+    
+    // 3. Search Filter
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const val = e.target.value.toUpperCase();
       COINS.forEach(sym => {
-        const el = document.getElementById(`row-${sym}`);
-        el.style.display = sym.includes(val) ? 'flex' : 'none';
+        document.getElementById(`row-${sym}`).style.display = sym.includes(val) ? 'flex' : 'none';
       });
     });
-
-    fetchMarketData();
-    setTimeout(connect, 600);
-    setInterval(plotTick, PLOT_INTERVAL_MS);
-    
-    setTimeout(() => {
-       document.getElementById('row-BTC').classList.add('active');
-       updateKPI(STATE.coins['BTC']);
-    }, 100);
-
-    setInterval(() => {
-      const ms = (10 + Math.random()*15).toFixed(0);
-      log(`Heartbeat: ping=${ms}ms stable`, 'HBEAT');
-      document.getElementById('ping').innerText = `${ms}ms`;
-    }, 2000);
   }
 
-  async function loadCoin(sym, doLog = true) {
+  async function loadCoin(sym) {
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     document.getElementById(`row-${sym}`).classList.add('active');
-    
     STATE.active = sym;
-    if(doLog) log(`Feed Switched -> ${sym}`, 'SYS');
-    document.getElementById('tradeFeed').innerHTML = ''; 
     
-    const coin = STATE.coins[sym];
+    document.getElementById('tradeFeed').innerHTML = '';
     
-    // FIX 1: If history is empty, fetch immediately
-    if (coin.history.length === 0) {
-      log(`Cache Miss. Fetching ${sym}...`, 'NET');
-      await fetchHistoryForCoin(sym);
+    // Fetch Data
+    const data = await fetchHistory(sym, STATE.timeframe);
+    if(data) {
+      chart.data.datasets[0].data = data.prices;
+      chart.data.labels = data.labels;
+      if(STATE.showSMA) chart.data.datasets[1].data = calculateSMA(data.prices, 20);
+      chart.update();
     }
-
-    // Disable animation during swap for instant feel
-    chart.options.animation = false; 
-    chart.data.datasets[0].data = coin.history;
-    chart.data.labels = coin.labels;
-    chart.update(); 
-    
-    setTimeout(() => {
-      chart.options.animation = { duration: 1500, easing: 'linear' };
-    }, 50);
-
-    const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
-    const c = colors[sym] || '#ffffff';
-    chart.data.datasets[0].borderColor = c;
-    chart.data.datasets[0].backgroundColor = (ctx) => {
-      const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
-      g.addColorStop(0, c+'22'); g.addColorStop(1, c+'00');
-      return g;
-    };
-    
-    updateKPI(coin);
   }
 
-  function handleStreamData(sym, price, time) {
-    const coin = STATE.coins[sym];
-    coin.prev = coin.price;
-    coin.price = price;
-    
-    coin.lastBufferPrice = price;
-
-    const pEl = document.getElementById(`p-${sym}`);
-    if(pEl) {
-      pEl.textContent = fmt(price);
-      pEl.style.color = price >= coin.prev ? '#0ecb81' : '#f6465d';
+  function handleTick(sym, price) {
+    STATE.coins[sym].price = price;
+    const el = document.getElementById(`p-${sym}`);
+    if(el) {
+      el.textContent = fmt(price);
+      el.style.color = '#fff';
     }
     
+    // If active, push to chart (live update mode)
     if(sym === STATE.active) {
-      document.getElementById('kpiPrice').textContent = fmt(price);
-    }
-  }
-
-  function plotTick() {
-    COINS.forEach(sym => {
-      const coin = STATE.coins[sym];
-      if(coin.lastBufferPrice !== null) {
-        const timeLabel = new Date().toLocaleTimeString('en-GB');
-        coin.history.push(coin.lastBufferPrice);
-        coin.labels.push(timeLabel);
-        
-        if(coin.history.length > 50) { 
-          coin.history.shift(); 
-          coin.labels.shift(); 
-        }
+      const lastPrice = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1];
+      if(lastPrice !== price) {
+        // Simple real-time update logic: 
+        // For proper candle closes we'd need more logic, here we just update the "live" tip
+        // We only append if it's a new minute in reality, but for visual flow we update the last point
+        // Or push a new point if using 1s granularity.
+        // For this simplified "Commander" view, we will just update the last point to current price
+        // to simulate a live candle moving.
+        const len = chart.data.datasets[0].data.length;
+        chart.data.datasets[0].data[len-1] = price;
+        chart.update('none'); // Efficient update
       }
-    });
-
-    const activeCoin = STATE.coins[STATE.active];
-    if(activeCoin && activeCoin.history.length > 0) {
-      chart.data.datasets[0].data = activeCoin.history;
-      chart.data.labels = activeCoin.labels;
-      
-      const min = Math.min(...activeCoin.history);
-      const max = Math.max(...activeCoin.history);
-      const padding = (max - min) * 0.1;
-      
-      chart.options.scales.y.min = min - padding;
-      chart.options.scales.y.max = max + padding;
-      chart.update(); 
     }
   }
 
-  function updateKPI(coin) {
-    document.getElementById('kpiPrice').textContent = fmt(coin.price);
-    
-    if(coin.stats) {
-      const chg = coin.stats.change;
-      const chgEl = document.getElementById('kpiChange');
-      chgEl.textContent = (chg > 0 ? '+' : '') + chg.toFixed(2) + '%';
-      chgEl.style.color = chg >= 0 ? '#0ecb81' : '#f6465d';
-
-      document.getElementById('kpiVol').textContent = fmtLarge(coin.stats.vol);
-      document.getElementById('kpiHigh').textContent = fmt(coin.stats.high);
-    }
-    
-    document.title = `${fmt(coin.price)} ${STATE.active}`;
-  }
-
-  function addTrade(sym, price, qty, time, isMaker) {
+  function addTrade(sym, price, qty, isMaker) {
     if(sym !== STATE.active) return;
+    
     const val = price * qty;
-    const isWhale = val > WHALE_THRESHOLD;
+    const widthPct = Math.min((val / MAX_VOLUME_SCALE) * 100, 100);
+    const sideClass = isMaker ? 'down' : 'up'; // Maker sell = Red, Taker buy = Green
+    const barColor = isMaker ? 'rgba(246,70,93,0.15)' : 'rgba(14,203,129,0.15)';
     
     const row = document.createElement('div');
-    row.className = `trade-row ${isWhale ? 'trade-whale' : ''}`;
-    const ts = new Date(time).toLocaleTimeString().split(' ')[0];
-    const typeClass = isMaker ? 'down' : 'up'; 
+    row.className = 'trade-row';
     
-    row.innerHTML = `
-      <span>${ts}</span>
-      <span class="${typeClass}">${fmt(price)}</span>
-      <span>${isWhale ? '🐋' : ''}${val > 1000 ? (val/1000).toFixed(1)+'k' : val.toFixed(0)}</span>
+    // Visual Volume Bar
+    const bar = document.createElement('div');
+    bar.className = 'vol-bar';
+    bar.style.width = widthPct + '%';
+    bar.style.background = barColor;
+    
+    const content = document.createElement('div');
+    content.className = 'row-content';
+    const time = new Date().toLocaleTimeString('en-GB');
+    
+    content.innerHTML = `
+      <span>${time}</span>
+      <span class="${sideClass}">${fmt(price)}</span>
+      <span>${val > 10000 ? (val/1000).toFixed(1)+'K' : val.toFixed(0)}</span>
     `;
+    
+    row.appendChild(bar);
+    row.appendChild(content);
     
     const feed = document.getElementById('tradeFeed');
     feed.prepend(row);
-    if(feed.children.length > 50) feed.lastChild.remove();
+    if(feed.children.length > 40) feed.lastChild.remove();
   }
 
   function connect() {
-    log('Opening WebSocket Uplink...', 'NET');
+    log('Connecting WS...', 'NET');
     const streams = COINS.map(c => c.toLowerCase()+'usdt@trade').join('/');
     const ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
-    ws.onopen = () => log('Stream Lock Established.', 'NET');
-    ws.onclose = () => { log('Connection lost. Retrying...', 'ERR'); setTimeout(connect, 3000); };
-    
+    ws.onopen = () => log('Stream Active', 'NET');
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       if(!msg.data) return;
-      const { s, p, q, m, T } = msg.data;
+      const { s, p, q, m } = msg.data;
       const sym = s.replace('USDT','');
-      handleStreamData(sym, parseFloat(p), T);
-      addTrade(sym, parseFloat(p), parseFloat(q), T, m);
+      handleTick(sym, parseFloat(p));
+      addTrade(sym, parseFloat(p), parseFloat(q), m);
     };
   }
 
   function fmt(n) { 
     return (n * STATE.rate).toLocaleString('en-US', { style:'currency', currency: STATE.currency==='USDT'?'USD':'INR' }); 
   }
-  
-  function fmtLarge(n) {
-    if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
-    if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
-    return n.toLocaleString();
-  }
 
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
-    Object.values(STATE.coins).forEach(c => { c.history=[]; c.labels=[]; });
-    fetchMarketData(); 
-    log(`Rebasing Currency to ${STATE.currency}`, 'SYS');
+    loadCoin(STATE.active); // Reload to re-format axis
   };
 
   init();
