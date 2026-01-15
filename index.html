@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIM | Instant Load Terminal</title>
+  <title>MIM | Auto-Fit Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -25,7 +25,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; width: 100vw; overflow: hidden; }
 
-    /* LAYOUT: Fixed Header + 3 Columns */
+    /* LAYOUT */
     .dashboard {
       display: grid;
       height: 100%;
@@ -48,7 +48,7 @@
     .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    /* 2. SIDEBAR */
+    /* 2. SIDEBAR (Layout Fix) */
     .sidebar { 
       grid-area: side; background: #050505; border-right: 1px solid var(--border); 
       display: flex; flex-direction: column; height: 100%; overflow: hidden;
@@ -60,11 +60,11 @@
       background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     }
     
-    /* Coin List: FLEX GROW to fill space */
+    /* Coin List: CONTENT-BASED HEIGHT */
     .coin-list { 
-      flex: 1; /* Takes all available space */
+      flex: 0 1 auto; /* Don't grow aggressively, just fit content */
       overflow-y: auto; border-bottom: 1px solid var(--border); 
-      min-height: 0; /* Crucial for scrolling */
+      max-height: 60vh; /* Safety cap so it doesn't push terminal off screen */
     }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
@@ -74,15 +74,16 @@
     .coin-row:hover { background: #111; }
     .coin-row.active { background: #111; border-left-color: var(--text); }
     
-    /* Terminal: FIXED HEIGHT (Small & Compact) */
+    /* Terminal: FILLS REMAINING SPACE */
     .terminal-panel {
-      flex: 0 0 180px; /* Fixed height */
-      display: flex; flex-direction: column; background: #020202;
+      flex: 1; /* Grow to fill whatever space is left */
+      display: flex; flex-direction: column; background: #020202; 
+      min-height: 0; /* Important for flex child scrolling */
     }
     .terminal-head { flex: 0 0 auto; background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; border-top: 1px solid #222; }
     .sys-log { 
       flex: 1; padding: 12px; font-family: var(--mono); font-size: 10px; 
-      overflow-y: hidden; 
+      overflow-y: hidden; /* Auto-scroll handled by JS trimming */
       color: #444; display: flex; flex-direction: column-reverse; 
     }
     .log-line { margin-bottom: 3px; word-break: break-all; line-height: 1.4; }
@@ -246,13 +247,12 @@
       }]
     },
     options: {
-      responsive: true, 
-      maintainAspectRatio: false, 
+      responsive: true, maintainAspectRatio: false, 
       layout: {
         padding: { left: 0, right: 20, top: 20, bottom: 40 }
       },
       animation: {
-        duration: 1500, // Smooth glide for live ticks
+        duration: 1500,
         easing: 'linear'
       },
       interaction: { mode: 'index', intersect: false },
@@ -289,56 +289,38 @@
     
     div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
-    if(wrapper.children.length > 100) wrapper.lastChild.remove();
+    
+    // Auto-trim to prevent memory leak
+    if(wrapper.children.length > 200) wrapper.lastChild.remove();
   }
 
   // --- DATA LOADING ---
-  // Background fetch to populate graphs instantly
   async function backfillHistory() {
-    log('Fetching historic data for all assets...', 'NET');
-    
-    // We use Promise.all to fetch in parallel. 
-    // Binance Limits: using 12 request is safe.
+    log('Fetching historic data...', 'NET');
     const promises = COINS.map(async (sym) => {
       try {
         const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=1m&limit=50`);
         const data = await res.json();
         const coin = STATE.coins[sym];
-        
-        // Map Klines to our history format
-        // Kline format: [time, open, high, low, close, ...]
         data.forEach(k => {
-          const price = parseFloat(k[4]); // Close price
+          const price = parseFloat(k[4]); 
           const timeLabel = new Date(k[0]).toLocaleTimeString('en-GB');
           coin.history.push(price);
           coin.labels.push(timeLabel);
-          
-          // Set High/Last params
           coin.price = price;
           if(price > coin.high) coin.high = price;
         });
-
-        // Update UI if this is the active coin
-        if(sym === STATE.active) {
-          loadCoin(sym, false); // false = no log
-        }
-        
-        // Update Sidebars
+        if(sym === STATE.active) loadCoin(sym, false);
         const pEl = document.getElementById(`p-${sym}`);
         if(pEl) pEl.textContent = fmt(coin.price);
-
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { }
     });
-
     await Promise.all(promises);
     log('History Backfill Complete.', 'SYS');
   }
 
   // --- LOGIC ---
   function init() {
-    // BOOT LOGS
     setTimeout(() => log('BIOS Check... OK', 'SYS'), 0);
     setTimeout(() => log('Mounting Virtual DOM...', 'SYS'), 50);
     setTimeout(() => log('Allocating Memory Buffers...', 'SYS'), 100);
@@ -368,18 +350,15 @@
       list.appendChild(row);
     });
     
-    // Start Data Flow
-    backfillHistory(); // HTTP Fetch
-    setTimeout(connect, 600); // WS Connect
-    setInterval(plotTick, PLOT_INTERVAL_MS); // Plot Loop
+    backfillHistory();
+    setTimeout(connect, 600);
+    setInterval(plotTick, PLOT_INTERVAL_MS);
     
-    // Select default visually
     setTimeout(() => {
        document.getElementById('row-BTC').classList.add('active');
        updateKPI(STATE.coins['BTC']);
     }, 100);
 
-    // Heartbeat
     setInterval(() => {
       const ms = (10 + Math.random()*15).toFixed(0);
       log(`Heartbeat: ping=${ms}ms stable`, 'HBEAT');
@@ -397,19 +376,16 @@
     
     const coin = STATE.coins[sym];
     
-    // INSTANT SWAP: Disable animation for the swap to avoid morphing
+    // Disable animation during swap
     chart.options.animation = false; 
-    
     chart.data.datasets[0].data = coin.history;
     chart.data.labels = coin.labels;
     chart.update(); 
     
-    // Re-enable animation for next ticks
     setTimeout(() => {
       chart.options.animation = { duration: 1500, easing: 'linear' };
     }, 50);
 
-    // Dynamic Colors
     const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
     const c = colors[sym] || '#ffffff';
     chart.data.datasets[0].borderColor = c;
@@ -442,7 +418,6 @@
   function plotTick() {
     COINS.forEach(sym => {
       const coin = STATE.coins[sym];
-      // Push buffer to history if we have fresh data
       if(coin.lastBufferPrice !== null) {
         const timeLabel = new Date().toLocaleTimeString('en-GB');
         coin.history.push(coin.lastBufferPrice);
@@ -528,7 +503,6 @@
 
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
-    // Clear history on currency change to avoid spikes
     Object.values(STATE.coins).forEach(c => { c.history=[]; c.labels=[]; });
     backfillHistory(); // Re-fetch
     log(`Rebasing Currency to ${STATE.currency}`, 'SYS');
