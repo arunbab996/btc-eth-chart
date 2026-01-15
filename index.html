@@ -3,40 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Magic Internet Money</title>
-
-  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
+  <title>Matte Black Tracker</title>
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231E1E1E'/><text x='50' y='65' font-size='40' text-anchor='middle' fill='white'>M</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    :root{ --bg:#071018; --panel:#0d1114; --muted:#9aa3ad; --text:#dbe6ee; --btc:#f7931a; --eth:#627eea; }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto}
-    .root{height:100vh;display:flex;flex-direction:column}
-    header.appbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(255,255,255,0.03)}
-    .main{flex:1;display:flex;gap:16px;padding:18px;box-sizing:border-box}
-    .chart-panel{flex:3;display:flex;flex-direction:column;border-radius:10px;padding:12px;overflow:hidden}
-    .chart-canvas-wrap{flex:1;min-height:0;display:flex}
-    canvas{width:100%!important;height:100%!important;display:block}
-    .sidebar{flex:1;max-width:360px;display:flex;flex-direction:column;gap:12px}
-    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.03);border-radius:10px;padding:12px}
-    .coin-row{display:flex;align-items:center;gap:10px;cursor:pointer}
-    .coin-row.inactive{opacity:0.55}
-    .coin-icon{width:36px;height:36px}
-    .small{font-size:12px;color:var(--muted)}
-    .footer{height:36px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
-    @media(max-width:900px){ .main{padding:12px;flex-direction:column} .sidebar{width:100%;max-width:none} }
+    /* MATTE BLACK THEME */
+    :root { 
+      --bg: #141414;        /* Deep Matte Black */
+      --panel: #1E1E1E;     /* Lighter Matte Panel */
+      --border: #2A2A2A;    /* Subtle Border */
+      --text-main: #E0E0E0; /* Off-white text */
+      --text-dim: #757575;  /* Dim text */
+      --accent: #E0E0E0;    /* White accent */
+      --green: #3bd671; 
+      --red: #ff5b5b;
+    }
+
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    
+    /* Layout */
+    .root { height: 100vh; display: flex; flex-direction: column; }
+    header.appbar { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--panel); }
+    
+    .main { flex: 1; display: flex; gap: 20px; padding: 20px; box-sizing: border-box; overflow: hidden; }
+    
+    /* Panels */
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; }
+    .chart-panel { flex: 3; min-width: 0; } /* min-width 0 prevents canvas overflow */
+    .sidebar { flex: 1; max-width: 380px; display: flex; flex-direction: column; gap: 16px; min-width: 280px; }
+
+    /* Chart Area */
+    .chart-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    
+    /* Watchlist Items */
+    .coin-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
+    .coin-row:hover { background: rgba(255,255,255,0.03); }
+    .coin-row.active { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+    
+    .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #2c2c2c; object-fit: cover; }
+    .coin-info { flex: 1; }
+    .coin-price { font-weight: 600; font-feature-settings: "tnum"; }
+    
+    /* Typography */
+    .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .value-lg { font-size: 24px; font-weight: 700; font-feature-settings: "tnum"; }
+    .small { font-size: 13px; color: var(--text-dim); }
+
+    /* Inputs & Buttons */
+    input, select { background: var(--bg); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 6px; outline: none; font-family: inherit; }
+    input:focus, select:focus { border-color: #555; }
+    
+    button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; }
+    button:hover { background: #444; }
+    button.primary { background: var(--text-main); color: var(--bg); }
+    button.primary:hover { background: #fff; }
+
+    /* Utils */
+    .flex-row { display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; margin-right: 8px; transition: background 0.3s; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    @media(max-width: 900px){ .main{ flex-direction: column; overflow-y: auto; } .chart-panel { height: 400px; flex: none; } }
   </style>
 </head>
 <body>
+
   <div class="root">
     <header class="appbar">
-      <div>
-        <div style="font-weight:700">Magic Internet Money</div>
-        <div class="small">Live Tick Chart — BTC / ETH · Source: Binance WebSocket</div>
+      <div class="flex-row">
+        <div id="statusDot" class="status-dot" title="Connecting..."></div>
+        <div style="font-weight:700; letter-spacing:-0.5px">Matte Black Tracker</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <label class="small" for="currencySelector">Currency</label>
-        <select id="currencySelector" aria-label="Currency selector">
+      
+      <div class="flex-row">
+        <select id="currencySelector">
           <option value="USDT">USDT</option>
           <option value="USD">USD</option>
           <option value="INR">INR</option>
@@ -46,189 +90,327 @@
     </header>
 
     <div class="main">
+      
       <section class="chart-panel card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-weight:700">Live Tick Chart — <span id="chartSymbol">BTC</span></div>
-          <div class="small" id="last">Started: —</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px">
+          <div>
+            <div class="label" style="margin-bottom:4px">Current Price</div>
+            <div class="flex-row">
+              <span id="bigPrice" class="value-lg">—</span>
+              <span id="bigChange" style="font-size:14px; font-weight:600">—</span>
+            </div>
+            <div class="small" style="margin-top:4px"><span id="activeSymbolName">Bitcoin</span> · Live Data</div>
+          </div>
+          <div class="small" id="lastUpdate">Connecting...</div>
         </div>
 
         <div class="chart-canvas-wrap">
-          <canvas id="chart" aria-label="Live chart"></canvas>
+          <canvas id="chart"></canvas>
         </div>
-
       </section>
 
       <aside class="sidebar">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div style="font-weight:700">Watchlist</div>
-            <div class="small">Live</div>
-          </div>
-
-          <div id="btcPanel" class="coin-row" role="button" aria-pressed="true">
-            <svg class="coin-icon" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="30" fill="#f7931a"/><text x="32" y="38" font-size="28" font-family="Arial" text-anchor="middle" fill="#fff">฿</text></svg>
-            <div style="flex:1">
-              <div class="small">Bitcoin</div>
-              <div id="btcLive" style="font-weight:700">—</div>
-            </div>
-            <div class="small" id="btcChange">—</div>
-          </div>
-
-          <hr style="border:none;height:8px">
-
-          <div id="ethPanel" class="coin-row inactive" role="button" aria-pressed="false">
-            <svg class="coin-icon" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="30" fill="#627eea"/><path d="M32 16 L22 32 L32 28 L42 32 Z M32 36 L22 32 L32 44 L42 32 Z" fill="#fff" transform="translate(0,0)"/></svg>
-            <div style="flex:1">
-              <div class="small">Ethereum</div>
-              <div id="ethLive" style="font-weight:700">—</div>
-            </div>
-            <div class="small" id="ethChange">—</div>
+        
+        <div class="card" style="padding:12px; gap:8px">
+          <div class="label">Add Coin</div>
+          <div class="flex-row">
+            <input type="text" id="newCoinInput" placeholder="Symbol (e.g. SOL)" style="flex:1; text-transform:uppercase">
+            <button id="addCoinBtn" class="primary">Add</button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="small">Options</div>
-          <select id="maxPoints"><option value="200">200</option><option value="400" selected>400</option><option value="800">800</option></select>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="injectBtn">Inject sample</button>
-            <button id="clearBtn">Clear</button>
+        <div class="card" style="flex:1; padding:0; overflow:hidden">
+          <div style="padding:16px 16px 8px; display:flex; justify-content:space-between">
+            <div class="label">Watchlist</div>
+            <div class="label" style="cursor:pointer" id="clearBtn">Clear All</div>
           </div>
+          
+          <div id="watchlist" style="flex:1; overflow-y:auto; padding:8px">
+            </div>
         </div>
 
       </aside>
     </div>
-
-    <div class="footer">Magic Internet Money — live tick preview</div>
   </div>
 
 <script>
 (function(){
-  function onReady(fn){ if(document.readyState === 'complete' || document.readyState === 'interactive'){ setTimeout(fn,0); } else { document.addEventListener('DOMContentLoaded', fn); } }
+  // --- CONFIG ---
+  const CONFIG = {
+    colors: { 
+      line: '#E0E0E0', 
+      grid: '#2A2A2A', 
+      text: '#757575', 
+      up: '#3bd671', 
+      down: '#ff5b5b' 
+    },
+    maxPoints: 400, // History length
+    defaultCoins: ['BTC', 'ETH']
+  };
 
-  onReady(function(){
-    var activeSymbol = 'BTC';
-    var paused = false;
-    var prevBTC = null, lastBTC = null, prevETH = null, lastETH = null;
-    var btcLabels = [], btcPrices = [], ethLabels = [], ethPrices = [];
-    var MAX_POINTS = 400;
-    var currencyRate = 1;
+  // --- STATE ---
+  let state = {
+    activeSymbol: 'BTC',
+    currency: 'USDT',
+    rate: 1,
+    paused: false,
+    coins: {} // Will store data: { BTC: { price: 0, prev: 0, history: [], color: '...' } }
+  };
 
-    var BTC_COLOR = '#f7931a';
-    var ETH_COLOR = '#627eea';
+  // --- UI REFS ---
+  const els = {
+    chart: document.getElementById('chart').getContext('2d'),
+    watchlist: document.getElementById('watchlist'),
+    bigPrice: document.getElementById('bigPrice'),
+    bigChange: document.getElementById('bigChange'),
+    activeName: document.getElementById('activeSymbolName'),
+    status: document.getElementById('statusDot'),
+    input: document.getElementById('newCoinInput'),
+    addBtn: document.getElementById('addCoinBtn')
+  };
 
-    var canvas = document.getElementById('chart');
-    var ctx = canvas.getContext('2d');
-
-    function safeGradient(ctxArg, area, color){
-      try{
-        var g;
-        if(!area || typeof area.top === 'undefined'){
-          g = ctxArg.createLinearGradient(0,0,0,200);
-          g.addColorStop(0, color + '33'); g.addColorStop(1, color + '05');
-          return g;
+  // --- CHART SETUP ---
+  const chart = new Chart(els.chart, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          data: [],
+          borderColor: CONFIG.colors.line,
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          backgroundColor: (ctx) => {
+            const grad = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+            grad.addColorStop(0, 'rgba(255,255,255,0.1)');
+            grad.addColorStop(1, 'rgba(255,255,255,0.0)');
+            return grad;
+          },
+          tension: 0.1
         }
-        g = ctxArg.createLinearGradient(0, area.top, 0, area.bottom);
-        g.addColorStop(0, hexToRgba(color,0.30)); g.addColorStop(1, hexToRgba(color,0.03));
-        return g;
-      }catch(e){ var gf = ctxArg.createLinearGradient(0,0,0,200); gf.addColorStop(0, hexToRgba(color,0.18)); gf.addColorStop(1, hexToRgba(color,0.02)); return gf; }
-    }
-
-    function hexToRgba(hex, alpha){
-      // remove # if present
-      hex = (hex.charAt(0) === '#') ? hex.substring(1) : hex;
-      if(hex.length === 3){ hex = hex.split('').map(function(h){ return h+h; }).join(''); }
-      var r = parseInt(hex.substring(0,2),16);
-      var g = parseInt(hex.substring(2,4),16);
-      var b = parseInt(hex.substring(4,6),16);
-      return 'rgba('+r+','+g+','+b+','+alpha+')';
-    }
-
-    var chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: [], datasets: [{ label: 'price', data: [], borderColor: BTC_COLOR, backgroundColor: null, borderWidth: 2.6, pointRadius: 0, tension: 0.28, fill: true }] },
-      options: { responsive: true, maintainAspectRatio: false, animation: { duration: 80, easing: 'linear' }, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9aa3ad' }, grid: { color: 'rgba(255,255,255,0.03)' } }, y: { ticks: { color: '#9aa3ad' }, grid: { color: 'rgba(255,255,255,0.03)' } } } }
-    });
-
-    function toLocal(ts){ return new Date(ts).toLocaleTimeString(); }
-    function fmt(n){ return n == null ? '—' : Number(n).toLocaleString(); }
-
-    function pushTick(sym, price, qty, ts){
-      if(sym === 'BTC'){
-        prevBTC = lastBTC; lastBTC = price;
-        btcLabels.push(toLocal(ts||Date.now())); btcPrices.push(price);
-        if(btcLabels.length > MAX_POINTS){ btcLabels.shift(); btcPrices.shift(); }
-        updateChangeDisplay('btcChange', prevBTC, lastBTC);
-      } else {
-        prevETH = lastETH; lastETH = price;
-        ethLabels.push(toLocal(ts||Date.now())); ethPrices.push(price);
-        if(ethLabels.length > MAX_POINTS){ ethLabels.shift(); ethPrices.shift(); }
-        updateChangeDisplay('ethChange', prevETH, lastETH);
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: {
+          position: 'right',
+          grid: { color: CONFIG.colors.grid },
+          ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() }
+        }
       }
     }
-
-    function updateChangeDisplay(elId, prev, now){
-      var el = document.getElementById(elId);
-      if(!el) return;
-      if(prev == null || now == null){ el.textContent = '—'; el.style.color = '' ; return; }
-      var pct = ((now - prev)/prev) * 100;
-      var sign = pct >= 0 ? '+' : '';
-      el.textContent = sign + pct.toFixed(2) + '%';
-      el.style.color = pct >= 0 ? '#3bd671' : '#ff6b6b';
-    }
-
-    function updateGradientAndColor(){
-      var area = chart.chartArea;
-      var color = activeSymbol === 'BTC' ? BTC_COLOR : ETH_COLOR;
-      chart.data.datasets[0].borderColor = color;
-      chart.data.datasets[0].backgroundColor = safeGradient(ctx, area, color);
-    }
-
-    function redraw(){
-      if(paused) return;
-      if(activeSymbol === 'BTC'){
-        chart.data.labels = btcLabels.slice();
-        chart.data.datasets[0].data = btcPrices.map(function(v){ return v * currencyRate; });
-      } else {
-        chart.data.labels = ethLabels.slice();
-        chart.data.datasets[0].data = ethPrices.map(function(v){ return v * currencyRate; });
-      }
-      updateGradientAndColor();
-      adjustY();
-      chart.update('none');
-      document.getElementById('btcLive').textContent = fmt(lastBTC ? lastBTC * currencyRate : null);
-      document.getElementById('ethLive').textContent = fmt(lastETH ? lastETH * currencyRate : null);
-      document.getElementById('last').textContent = 'Last update: ' + new Date().toLocaleTimeString();
-      document.getElementById('chartSymbol').textContent = activeSymbol;
-    }
-
-    var raf = false;
-    function schedule(){ if(raf) return; raf = true; requestAnimationFrame(function(){ raf=false; redraw(); }); }
-
-    function adjustY(){ var arr = (activeSymbol==='BTC'?btcPrices:ethPrices).map(function(v){ return v*currencyRate; }).filter(function(v){ return v!=null && !isNaN(v); }); if(!arr.length) return; var minV = Math.min.apply(null, arr); var maxV = Math.max.apply(null, arr); var range = Math.max(maxV-minV, Math.max(1, Math.abs(maxV)*0.0001)); var pad = Math.max(range*0.02, 0.5); chart.options.scales.y.min = Math.max(0, minV - pad); chart.options.scales.y.max = maxV + pad; }
-
-    // REST fallback
-    async function fetchOnce(){ try{ var bResp = await fetch('https://api.binance.com/api/v3/trades?symbol=BTCUSDT&limit=1'); var eResp = await fetch('https://api.binance.com/api/v3/trades?symbol=ETHUSDT&limit=1'); var bArr = await bResp.json(); var eArr = await eResp.json(); if(Array.isArray(bArr) && bArr.length){ var p = parseFloat(bArr[0].price||bArr[0].p); pushTick('BTC', p, 0, bArr[0].time||Date.now()); } if(Array.isArray(eArr) && eArr.length){ var p2 = parseFloat(eArr[0].price||eArr[0].p); pushTick('ETH', p2, 0, eArr[0].time||Date.now()); } schedule(); return true; }catch(err){ console.error('REST fetch err', err); return false; } }
-    var restTimer = null; function startRest(immediate){ if(restTimer) return; if(immediate) fetchOnce(); restTimer = setInterval(fetchOnce, 5000); } function stopRest(){ if(restTimer){ clearInterval(restTimer); restTimer=null; } }
-
-    // WebSocket
-    var socket = null;
-    function startWS(){ try{ var url = 'wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade'; socket = new WebSocket(url); var opened=false; var t=setTimeout(function(){ if(!opened){ console.warn('WS not open — starting REST'); startRest(true); } },1500); socket.onopen = function(){ opened=true; clearTimeout(t); stopRest(); document.getElementById('last').textContent='Last update: websocket'; }; socket.onmessage = function(evt){ try{ var msg = JSON.parse(evt.data); var data = msg.data||{}; var p = parseFloat(data.p || data.price); var ts = data.T || data.time || Date.now(); if(msg.stream && msg.stream.indexOf('btcusdt')===0){ pushTick('BTC', p, 0, ts); } else if(msg.stream && msg.stream.indexOf('ethusdt')===0){ pushTick('ETH', p, 0, ts); } schedule(); }catch(e){ console.error('WS parse', e); } }; socket.onerror = function(err){ console.error('WS err', err); startRest(true); }; socket.onclose = function(ev){ console.warn('WS closed', ev); startRest(true); }; }catch(e){ console.error('WS start err', e); startRest(true); } }
-
-    // UI
-    document.getElementById('btcPanel').addEventListener('click', function(){ activeSymbol='BTC'; document.getElementById('btcPanel').classList.remove('inactive'); document.getElementById('ethPanel').classList.add('inactive'); schedule(); });
-    document.getElementById('ethPanel').addEventListener('click', function(){ activeSymbol='ETH'; document.getElementById('ethPanel').classList.remove('inactive'); document.getElementById('btcPanel').classList.add('inactive'); schedule(); });
-
-    document.getElementById('pauseBtn').addEventListener('click', function(){ paused = !paused; this.textContent = paused? 'Resume' : 'Pause'; });
-    document.getElementById('injectBtn').addEventListener('click', function(){ var now=Date.now(); for(var i=60;i>0;i--){ var ts=now - i*1000; var price = 60000 + Math.sin(i/6)*300 + (Math.random()-0.5)*60; pushTick('BTC', Number(price.toFixed(2)), 0, ts); } schedule(); });
-    document.getElementById('clearBtn').addEventListener('click', function(){ btcLabels=[]; btcPrices=[]; ethLabels=[]; ethPrices=[]; prevBTC=null; prevETH=null; schedule(); });
-    document.getElementById('maxPoints').addEventListener('change', function(e){ MAX_POINTS = Number(e.target.value); });
-    document.getElementById('currencySelector').addEventListener('change', function(e){ schedule(); });
-
-    window.addEventListener('keydown', function(e){ if(e.key==='1'){ document.getElementById('btcPanel').click(); } else if(e.key==='2'){ document.getElementById('ethPanel').click(); } });
-
-    startWS();
-    window._debug = { pushTick: pushTick, schedule: schedule, chart: chart };
   });
+
+  // --- LOGIC ---
+
+  // 1. Initialize a Coin
+  function initCoin(symbol) {
+    if(state.coins[symbol]) return;
+    state.coins[symbol] = {
+      price: null,
+      prev: null,
+      history: [],
+      name: symbol // Could fetch full name if needed
+    };
+    renderWatchlistItem(symbol);
+    subscribeWS(symbol);
+  }
+
+  // 2. Render Watchlist Item
+  function renderWatchlistItem(symbol) {
+    const div = document.createElement('div');
+    div.className = `coin-row ${symbol === state.activeSymbol ? 'active' : ''}`;
+    div.id = `row-${symbol}`;
+    div.onclick = () => switchCoin(symbol);
+    
+    // Icon URL from CDN (Standard crypto icon library)
+    const iconUrl = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${symbol.toLowerCase()}.svg`;
+    
+    div.innerHTML = `
+      <img src="${iconUrl}" class="coin-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSIxNiIgeT0iMjEiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM3NzciD4/PC90ZXh0Pjwvc3ZnPg=='">
+      <div class="coin-info">
+        <div style="font-weight:600; font-size:14px">${symbol}</div>
+        <div class="small" style="opacity:0.7">USDT</div>
+      </div>
+      <div style="text-align:right">
+        <div class="coin-price" id="price-${symbol}">—</div>
+        <div class="small" id="change-${symbol}">—</div>
+      </div>
+    `;
+    els.watchlist.appendChild(div);
+  }
+
+  // 3. Switch Active Coin
+  function switchCoin(symbol) {
+    // UI Update
+    document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
+    const row = document.getElementById(`row-${symbol}`);
+    if(row) row.classList.add('active');
+
+    state.activeSymbol = symbol;
+    els.activeName.textContent = symbol + " / USDT";
+    
+    // Reset Chart Data
+    const coinData = state.coins[symbol];
+    chart.data.labels = new Array(coinData.history.length).fill('');
+    chart.data.datasets[0].data = coinData.history; // This will just point to the array
+    
+    // Force re-render immediately to avoid lag
+    updateMainDisplay(); 
+  }
+
+  // 4. Process Incoming Data
+  function handleTick(symbol, price) {
+    if(!state.coins[symbol]) return;
+    const coin = state.coins[symbol];
+    
+    coin.prev = coin.price;
+    coin.price = price;
+    
+    // Push to history
+    coin.history.push(price * state.rate);
+    if(coin.history.length > CONFIG.maxPoints) coin.history.shift();
+
+    // Update Sidebar UI
+    const priceEl = document.getElementById(`price-${symbol}`);
+    const changeEl = document.getElementById(`change-${symbol}`);
+    
+    if(priceEl) {
+      priceEl.textContent = fmt(price);
+      // Flash effect could go here
+    }
+    
+    if(changeEl && coin.prev) {
+      const pct = ((price - coin.prev) / coin.prev) * 100;
+      changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      changeEl.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
+    }
+
+    // Update Chart if active
+    if(symbol === state.activeSymbol && !state.paused) {
+      updateMainDisplay();
+    }
+  }
+
+  function updateMainDisplay() {
+    const coin = state.coins[state.activeSymbol];
+    if(!coin || !coin.price) return;
+
+    // Header Numbers
+    els.bigPrice.textContent = fmt(coin.price);
+    const pct = coin.prev ? ((coin.price - coin.prev) / coin.prev) * 100 : 0;
+    els.bigChange.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+    els.bigChange.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
+    document.title = `${fmt(coin.price)} ${state.activeSymbol}`;
+
+    // Chart Auto-Scale
+    const hist = coin.history;
+    if(hist.length > 2) {
+      const min = Math.min(...hist);
+      const max = Math.max(...hist);
+      const pad = (max - min) * 0.1;
+      chart.options.scales.y.min = min - pad;
+      chart.options.scales.y.max = max + pad;
+    }
+
+    chart.update('none'); // 'none' mode for performance
+  }
+
+  // --- WEBSOCKET ---
+  let ws;
+  function connect() {
+    // Start with default streams
+    const streams = CONFIG.defaultCoins.map(s => `${s.toLowerCase()}usdt@trade`).join('/');
+    ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
+    
+    ws.onopen = () => {
+      els.status.style.background = CONFIG.colors.up;
+      els.status.title = "Connected via WebSocket";
+    };
+    
+    ws.onclose = () => {
+      els.status.style.background = CONFIG.colors.down;
+      setTimeout(connect, 3000); // Auto Reconnect
+    };
+    
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      // Msg format: { stream: "btcusdt@trade", data: { p: "...", s: "BTCUSDT" ... } }
+      if(msg.data && msg.data.s) {
+        const symbol = msg.data.s.replace('USDT',''); // Extract "BTC" from "BTCUSDT"
+        const price = parseFloat(msg.data.p);
+        handleTick(symbol, price);
+      }
+    };
+  }
+
+  function subscribeWS(symbol) {
+    if(ws && ws.readyState === WebSocket.OPEN) {
+      const payload = {
+        method: "SUBSCRIBE",
+        params: [`${symbol.toLowerCase()}usdt@trade`],
+        id: Date.now()
+      };
+      ws.send(JSON.stringify(payload));
+    }
+  }
+
+  // --- UTILS ---
+  function fmt(n) { 
+    return (n * state.rate).toLocaleString(undefined, {
+      style:'currency', 
+      currency: state.currency === 'USDT' ? 'USD' : state.currency 
+    }); 
+  }
+
+  // --- EVENTS ---
+  document.getElementById('addCoinBtn').addEventListener('click', () => {
+    const val = els.input.value.toUpperCase().trim();
+    if(val && !state.coins[val]) {
+      initCoin(val);
+      els.input.value = '';
+    }
+  });
+
+  els.input.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') document.getElementById('addCoinBtn').click();
+  });
+
+  document.getElementById('currencySelector').addEventListener('change', (e) => {
+    state.currency = e.target.value;
+    state.rate = e.target.value === 'INR' ? 86.5 : 1;
+    // Recalculate history for all coins
+    Object.keys(state.coins).forEach(k => {
+      // Simplification: We don't store raw USD in history in this basic version,
+      // so we just clear history on currency switch to avoid spikes.
+      // A pro version would store raw USD and convert on render.
+      state.coins[k].history = []; 
+    });
+    updateMainDisplay();
+  });
+
+  document.getElementById('pauseBtn').addEventListener('click', function(){
+    state.paused = !state.paused;
+    this.textContent = state.paused ? 'Resume' : 'Pause';
+  });
+  
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    // Clear custom coins, keep active? 
+    // For now, just reload to defaults for simplicity or clear all but active
+    location.reload(); 
+  });
+
+  // --- INIT ---
+  CONFIG.defaultCoins.forEach(initCoin);
+  connect();
+
 })();
 </script>
 </body>
