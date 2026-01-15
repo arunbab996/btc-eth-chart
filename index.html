@@ -6,7 +6,6 @@
   <title>Magic Internet Money</title>
   
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
-  
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
@@ -19,7 +18,6 @@
       --text-dim: #888888;  
       --green: #3bd671; 
       --red: #ff5b5b;
-      --btc-orange: #f7931a;
     }
 
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; }
@@ -125,8 +123,15 @@
 (function(){
   // --- CONFIG ---
   const CONFIG = {
-    colors: { line: '#ffffff', grid: '#2A2A2A', text: '#666', up: '#3bd671', down: '#ff5b5b' },
-    maxPoints: 300,
+    colors: { grid: '#2A2A2A', text: '#666', up: '#3bd671', down: '#ff5b5b' },
+    brandColors: { 
+      'BTC': '#f7931a', // Bitcoin Orange
+      'ETH': '#627eea', // Ethereum Blue
+      'SOL': '#14F195', 
+      'DOGE': '#cb9800' 
+    },
+    defaultColor: '#ffffff',
+    maxPoints: 100,
     defaultCoins: ['BTC', 'ETH']
   };
 
@@ -150,11 +155,11 @@
   };
 
   // --- CHART INITIALIZATION ---
-  // We use a helper to create the gradient
-  function createGradient(ctx, color) {
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, color + '40'); // 25% opacity
-    gradient.addColorStop(1, color + '00'); // 0% opacity
+  // Helper to create gradient based on current active color
+  function getGradient(ctx, area, color) {
+    const gradient = ctx.createLinearGradient(0, area.top, 0, area.bottom);
+    gradient.addColorStop(0, color + '60'); // 40% opacity at top
+    gradient.addColorStop(1, color + '00'); // 0% opacity at bottom
     return gradient;
   }
 
@@ -165,22 +170,30 @@
       datasets: [{
         label: 'Price',
         data: [],
-        borderColor: '#ffffff',
+        borderColor: CONFIG.brandColors.BTC, // Default start
         borderWidth: 2,
-        tension: 0.4, // Smooths the line
+        tension: 0.4, 
         pointRadius: 0,
         fill: true,
-        backgroundColor: 'rgba(255,255,255,0.05)'
+        backgroundColor: null // Set dynamically
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: false, // Important for performance
+      animation: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      plugins: { legend: { display: false }, tooltip: { enabled: true, intersect: false } },
       scales: {
-        x: { display: false }, // Hide X axis for cleaner look
+        x: { 
+          display: true, // X-AXIS ENABLED
+          ticks: { 
+            maxTicksLimit: 6, 
+            color: '#444', 
+            maxRotation: 0 
+          },
+          grid: { display: false }
+        },
         y: {
           position: 'right',
           grid: { color: CONFIG.colors.grid },
@@ -195,12 +208,11 @@
   function initCoin(symbol) {
     if(state.coins[symbol]) return;
     
-    // Initialize empty data structure
     state.coins[symbol] = {
-      price: 0,
-      prev: 0,
-      history: [], // Array of prices
-      color: '#ffffff'
+      price: 0, prev: 0,
+      history: [], labels: [],
+      // Assign brand color or default
+      color: CONFIG.brandColors[symbol] || CONFIG.defaultColor
     };
 
     renderWatchlistRow(symbol);
@@ -213,7 +225,6 @@
     div.id = `row-${symbol}`;
     div.onclick = () => switchCoin(symbol);
     
-    // Crypto Icon CDN
     const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${symbol.toLowerCase()}.svg`;
     
     div.innerHTML = `
@@ -231,7 +242,7 @@
   }
 
   function switchCoin(symbol) {
-    // 1. Update UI Selection
+    // 1. Highlight UI
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     const row = document.getElementById(`row-${symbol}`);
     if(row) row.classList.add('active');
@@ -239,33 +250,45 @@
     state.activeSymbol = symbol;
     els.activeName.textContent = `${symbol} / ${state.currency}`;
 
-    // 2. Update Chart Data immediately
+    // 2. Update Chart Theme (Color)
     const coin = state.coins[symbol];
+    chart.data.datasets[0].borderColor = coin.color;
+    // We clear the background so it regenerates with new color on next render
+    chart.data.datasets[0].backgroundColor = (context) => {
+      const {ctx, chartArea} = context.chart;
+      if (!chartArea) return null;
+      return getGradient(ctx, chartArea, coin.color);
+    };
+
+    // 3. Update Data
     if (coin.history.length > 0) {
-      updateChart(coin.history);
+      updateChart(coin.labels, coin.history);
       updateHeader(coin.price, coin.prev);
     } else {
-      // Clear if no data yet
-      updateChart([]);
+      updateChart([], []);
       els.bigPrice.textContent = "Loading...";
     }
   }
 
-  function handleTick(symbol, price) {
+  function handleTick(symbol, price, time) {
     if(!state.coins[symbol]) return;
     const coin = state.coins[symbol];
     
-    // Update State
     coin.prev = coin.price;
     coin.price = price;
     
-    // Convert to selected currency for history storage
     const localPrice = price * state.rate;
-    
-    coin.history.push(localPrice);
-    if(coin.history.length > CONFIG.maxPoints) coin.history.shift();
+    const timeLabel = new Date(time).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' });
 
-    // DOM Updates (Sidebar)
+    coin.history.push(localPrice);
+    coin.labels.push(timeLabel);
+    
+    if(coin.history.length > CONFIG.maxPoints) {
+      coin.history.shift();
+      coin.labels.shift();
+    }
+
+    // Sidebar Updates
     const pEl = document.getElementById(`price-${symbol}`);
     const cEl = document.getElementById(`change-${symbol}`);
     if(pEl) pEl.textContent = fmt(price);
@@ -276,34 +299,30 @@
       cEl.style.color = pct >= 0 ? CONFIG.colors.up : CONFIG.colors.down;
     }
 
-    // Chart Updates (Active Coin Only)
+    // Chart Updates (Active Only)
     if(symbol === state.activeSymbol && !state.paused) {
       updateHeader(coin.price, coin.prev);
-      updateChart(coin.history);
+      updateChart(coin.labels, coin.history);
     }
   }
 
-  function updateChart(dataArray) {
-    // We create a dummy label array of same length
-    chart.data.labels = new Array(dataArray.length).fill('');
-    chart.data.datasets[0].data = dataArray;
-
-    // Auto-Scale Y Axis
-    if(dataArray.length > 2) {
-      const min = Math.min(...dataArray);
-      const max = Math.max(...dataArray);
-      const padding = (max - min) * 0.2; // 20% padding for nice look
+  function updateChart(labels, data) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    
+    if(data.length > 2) {
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const padding = (max - min) * 0.1;
       chart.options.scales.y.min = min - padding;
       chart.options.scales.y.max = max + padding;
     }
-
     chart.update('none');
   }
 
   function updateHeader(price, prev) {
     els.bigPrice.textContent = fmt(price);
     document.title = `${fmt(price)} ${state.activeSymbol}`;
-    
     if(prev) {
       const pct = ((price - prev)/prev) * 100;
       els.bigChange.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
@@ -324,7 +343,7 @@
       const msg = JSON.parse(e.data);
       if(msg.data && msg.data.s) {
         const symbol = msg.data.s.replace('USDT','');
-        handleTick(symbol, parseFloat(msg.data.p));
+        handleTick(symbol, parseFloat(msg.data.p), msg.data.T);
       }
     };
   }
@@ -335,7 +354,7 @@
     }
   }
 
-  // --- UTILITIES ---
+  // --- UTILS ---
   function fmt(n) { 
     return (n * state.rate).toLocaleString(undefined, { 
       style: 'currency', 
@@ -351,12 +370,16 @@
       document.getElementById('newCoinInput').value = '';
     }
   });
+  
+  // Enter key support for input
+  document.getElementById('newCoinInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') document.getElementById('addCoinBtn').click();
+  });
 
   document.getElementById('currencySelector').addEventListener('change', (e) => {
     state.currency = e.target.value;
     state.rate = e.target.value === 'INR' ? 86.5 : 1;
-    // Clear histories on currency switch to avoid graph spikes
-    Object.values(state.coins).forEach(c => c.history = []);
+    Object.values(state.coins).forEach(c => { c.history = []; c.labels = []; }); // Reset histories
     chart.data.datasets[0].data = [];
     chart.update();
   });
