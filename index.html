@@ -9,27 +9,27 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <style>
-    /* --- TERMINAL THEME --- */
+    /* --- PRO TERMINAL THEME --- */
     :root { 
       --bg: #0b0b0b;          
-      --panel: #141414;       
+      --panel: #111111;       
       --border: #222;      
       --text-main: #e0e0e0; 
       --text-muted: #666;
       --success: #0ecb81;     
       --danger: #f6465d;      
       --font-mono: 'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace;
-      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
     }
 
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); overflow: hidden; }
     
-    /* Grid Layout */
+    /* Layout */
     .dashboard {
       display: grid;
       height: 100vh;
       grid-template-rows: 50px 1fr; 
-      grid-template-columns: 260px 1fr 280px; 
+      grid-template-columns: 280px 1fr 280px; 
       grid-template-areas: "head head head" "side main feed";
     }
 
@@ -49,15 +49,33 @@
     /* Chart Area */
     .chart-wrap { flex: 1; position: relative; width: 100%; background: #0b0b0b; }
 
-    /* Sidebar Lists */
-    .section-title { 
+    /* Sidebar Structure */
+    .section-header { 
       padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-muted); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); 
-      background: var(--panel); display: flex; justify-content: space-between;
+      background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     }
     
-    .scroll-area { flex: 1; overflow-y: auto; }
-    .scroll-area::-webkit-scrollbar { width: 0px; } /* Clean scroll */
+    .scroll-area { overflow-y: auto; }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #333; }
+
+    /* System Log (Fills bottom) */
+    .system-log-panel {
+      flex: 1; /* Fills remaining space */
+      border-top: 1px solid var(--border);
+      background: #080808;
+      display: flex; flex-direction: column;
+      min-height: 150px;
+    }
+    .log-content {
+      flex: 1; padding: 12px; font-family: var(--font-mono); 
+      font-size: 10px; color: #444; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .log-line span { color: #666; margin-right: 8px; }
+    .log-line b { color: var(--text-main); font-weight: normal; }
 
     /* Coin Row */
     .coin-row { 
@@ -113,20 +131,25 @@
     </header>
 
     <aside class="panel-side">
-      <div class="section-title">
-        <span>Active Tracker</span>
+      <div class="section-header">
+        <span>Favorites</span>
         <button id="addBtn">+</button>
       </div>
       <div style="padding:8px 16px; border-bottom:1px solid var(--border); display:none" id="inputPanel">
         <input id="inputCoin" placeholder="Type Symbol & Enter..." />
       </div>
-      <div id="watchlist" class="scroll-area" style="max-height: 40%"></div>
+      <div id="favoritesList" class="scroll-area" style="max-height: 200px; flex-shrink: 0;"></div>
 
-      <div class="section-title" style="border-top:1px solid var(--border)">
-        Trending / Popular
+      <div class="section-header" style="border-top:1px solid var(--border)">
+        <span>Trending</span>
       </div>
-      <div id="popularList" class="scroll-area" style="background: #0e0e0e;">
-        </div>
+      <div id="trendingList" class="scroll-area" style="max-height: 300px; flex-shrink: 0;"></div>
+
+      <div class="system-log-panel">
+        <div class="section-header" style="background:transparent; border:none; padding-bottom:0">System Log</div>
+        <div id="systemLog" class="log-content">
+          </div>
+      </div>
     </aside>
 
     <main class="panel-main">
@@ -154,19 +177,19 @@
     </main>
 
     <aside class="panel-feed">
-      <div class="section-title">Live Executions</div>
-      <div id="tradeFeed" class="scroll-area"></div>
+      <div class="section-header">Live Executions</div>
+      <div id="tradeFeed" class="scroll-area" style="flex:1"></div>
     </aside>
   </div>
 
 <script>
 (function(){
+  // --- CONFIG ---
   const CONFIG = {
-    // Top list is user controlled
-    defaultCoins: ['BTC', 'ETH'],
-    // Bottom list (Red Box) is fixed popular coins
-    popularCoins: ['SOL', 'XRP', 'BNB', 'DOGE', 'ADA', 'AVAX', 'DOT'],
-    colors: { up: '#0ecb81', down: '#f6465d', line: '#555' }
+    favorites: ['BTC', 'ETH'],
+    trending: ['SOL', 'XRP', 'DOGE', 'BNB', 'ADA', 'AVAX'],
+    colors: { up: '#0ecb81', down: '#f6465d' },
+    maxChartPoints: 100
   };
 
   let state = {
@@ -179,66 +202,78 @@
   // --- UI REFS ---
   const els = {
     chart: document.getElementById('chart').getContext('2d'),
-    watchlist: document.getElementById('watchlist'),
-    popularList: document.getElementById('popularList'),
+    favList: document.getElementById('favoritesList'),
+    trendList: document.getElementById('trendingList'),
     feed: document.getElementById('tradeFeed'),
+    log: document.getElementById('systemLog'),
     kpi: { p: document.getElementById('kpiPrice'), c: document.getElementById('kpiChange'), h: document.getElementById('kpiHigh'), v: document.getElementById('kpiVol') }
   };
 
-  // --- SMOOTH CHART ---
-  // We enable animation (duration 300ms) and tension (0.4) for smoothness
+  // --- CHART SETUP ---
   const chart = new Chart(els.chart, {
     type: 'line',
     data: {
       labels: [],
       datasets: [{
+        label: 'Price',
         data: [],
         borderColor: '#f7931a',
         borderWidth: 2,
         backgroundColor: (ctx) => {
-          const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
           g.addColorStop(0, 'rgba(247, 147, 26, 0.2)');
           g.addColorStop(1, 'rgba(247, 147, 26, 0.0)');
           return g;
         },
         fill: true,
-        tension: 0.4, // Smooths the curve
+        tension: 0.3, // Smooth curve
         pointRadius: 0
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      animation: { duration: 300, easing: 'easeOutQuart' }, // Smooth glide
+      animation: { duration: 0 }, // Disable internal animation for instant updates, relies on frequent ticks
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false } },
       scales: {
         x: { display: false },
-        y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#666' } }
-      },
-      plugins: { legend: { display: false } },
-      interaction: { intersect: false, mode: 'index' }
+        y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#555' } }
+      }
     }
   });
 
+  // --- SYSTEM LOG ---
+  function log(msg, type='info') {
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    const ts = new Date().toISOString().split('T')[1].split('.')[0];
+    div.innerHTML = `<span>${ts}</span> <b>${type.toUpperCase()}</b> ${msg}`;
+    els.log.prepend(div);
+    if(els.log.children.length > 50) els.log.lastChild.remove();
+  }
+
   // --- LOGIC ---
-  function initCoin(sym, isPopular = false) {
+  function initCoin(sym, isTrending = false) {
     if(state.coins[sym]) return;
+    
     state.coins[sym] = { 
       price: 0, prev: 0, 
       high: -Infinity, vol: 0,
-      history: [], labels: [],
-      isPopular: isPopular 
+      history: [], 
+      isTrending: isTrending 
     };
-    renderRow(sym, isPopular);
+    
+    renderRow(sym, isTrending);
     subscribe(sym);
   }
 
-  function renderRow(sym, isPopular) {
-    const container = isPopular ? els.popularList : els.watchlist;
+  function renderRow(sym, isTrending) {
+    const container = isTrending ? els.trendList : els.favList;
     const div = document.createElement('div');
     div.className = `coin-row ${sym === state.active ? 'active' : ''}`;
     div.id = `row-${sym}`;
     div.onclick = () => switchCoin(sym);
 
-    // Icon
     const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${sym.toLowerCase()}.svg`;
     
     div.innerHTML = `
@@ -258,20 +293,24 @@
   function handleTick(sym, price, vol) {
     if(!state.coins[sym]) return;
     const coin = state.coins[sym];
+    
     coin.prev = coin.price;
     coin.price = price;
     if(price > coin.high) coin.high = price;
     coin.vol += vol;
 
-    // History (only keep for active coin to save memory, or all if we want sparklines later)
+    // Only update history if it's the active coin (performance optimization)
     if(sym === state.active) {
       coin.history.push(price);
-      if(coin.history.length > 100) coin.history.shift();
-      updateChart(coin);
-      updateKPI(coin);
+      if(coin.history.length > CONFIG.maxChartPoints) coin.history.shift();
+      
+      requestAnimationFrame(() => {
+        updateChart(coin.history);
+        updateKPI(coin);
+      });
     }
 
-    // UI Update
+    // Sidebar text update
     const pEl = document.getElementById(`p-${sym}`);
     const cEl = document.getElementById(`c-${sym}`);
     if(pEl) {
@@ -290,38 +329,38 @@
     const r = document.getElementById(`row-${sym}`);
     if(r) r.classList.add('active');
     
+    log(`Switched view to ${sym}`, 'ui');
     state.active = sym;
-    els.feed.innerHTML = ''; // clear feed
+    els.feed.innerHTML = ''; // Clear executed trades panel
     
-    // Reset Chart
-    const coin = state.coins[sym];
-    coin.history = []; // Clear history on switch for clean start
-    chart.data.datasets[0].data = [];
-    chart.update();
-
-    // Color Theme Update
+    // Clear chart immediately to prevent ghosting
+    state.coins[sym].history = [];
+    updateChart([]);
+    
+    // Set Theme Color
     const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
     const color = colors[sym] || '#ffffff';
     chart.data.datasets[0].borderColor = color;
     chart.data.datasets[0].backgroundColor = (ctx) => {
-      const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
+      const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
       g.addColorStop(0, color+'33'); g.addColorStop(1, color+'00');
       return g;
     };
   }
 
-  function updateChart(coin) {
-    chart.data.labels = new Array(coin.history.length).fill('');
-    chart.data.datasets[0].data = coin.history;
+  function updateChart(data) {
+    // We just provide dummy labels to match data length
+    chart.data.labels = new Array(data.length).fill('');
+    chart.data.datasets[0].data = data;
     
-    // Auto-Scale
-    const min = Math.min(...coin.history);
-    const max = Math.max(...coin.history);
-    const pad = (max - min) * 0.1;
-    chart.options.scales.y.min = min - pad;
-    chart.options.scales.y.max = max + pad;
-    
-    chart.update('none'); // We use 'none' here but rely on the animation config in Chart options for the flow
+    if(data.length > 2) {
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const padding = (max - min) * 0.1;
+      chart.options.scales.y.min = min - padding;
+      chart.options.scales.y.max = max + padding;
+    }
+    chart.update();
   }
 
   function updateKPI(coin) {
@@ -333,54 +372,99 @@
       els.kpi.c.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
       els.kpi.c.style.color = pct>=0 ? CONFIG.colors.up : CONFIG.colors.down;
     }
+    document.title = `${fmt(coin.price)} ${state.active}`;
   }
 
-  // --- CONNECTION ---
-  const ws = new WebSocket('wss://stream.binance.com/stream?streams=btcusdt@trade/ethusdt@trade'); // Initial
-  ws.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    if(msg.data && msg.data.s) {
-      const s = msg.data.s.replace('USDT','');
-      const p = parseFloat(msg.data.p);
-      const q = parseFloat(msg.data.q);
-      handleTick(s, p, q);
-      if(s === state.active) addTrade(p, q, msg.data.T);
-    }
-  };
-
-  function subscribe(sym) {
-    if(ws.readyState === 1) {
-      ws.send(JSON.stringify({ method:"SUBSCRIBE", params:[`${sym.toLowerCase()}usdt@trade`], id: Date.now() }));
-    } else {
-      ws.addEventListener('open', () => subscribe(sym));
-    }
+  // --- WEBSOCKET ---
+  let ws;
+  function connect() {
+    log('Initializing WebSocket...', 'net');
+    
+    // Combine all coins into one stream URL
+    const allCoins = [...CONFIG.favorites, ...CONFIG.trending];
+    const streams = allCoins.map(c => `${c.toLowerCase()}usdt@trade`).join('/');
+    
+    ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
+    
+    ws.onopen = () => {
+      log('Connection established', 'net');
+      log(`Subscribed to ${allCoins.length} streams`, 'sys');
+    };
+    
+    ws.onclose = () => {
+      log('Connection lost. Reconnecting...', 'err');
+      setTimeout(connect, 3000);
+    };
+    
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if(msg.data && msg.data.s) {
+        const sym = msg.data.s.replace('USDT','');
+        const price = parseFloat(msg.data.p);
+        const qty = parseFloat(msg.data.q);
+        
+        handleTick(sym, price, qty);
+        
+        // If this tick belongs to the active coin, log the trade
+        if(sym === state.active) {
+          addTradeRow(price, qty, msg.data.T);
+        }
+      }
+    };
   }
 
-  function addTrade(p, q, t) {
+  function addTradeRow(p, q, t) {
     const row = document.createElement('div');
     row.className = 'trade-row';
     const time = new Date(t).toLocaleTimeString().split(' ')[0];
-    row.innerHTML = `<span>${time}</span><span style="color:${Math.random()>.5?CONFIG.colors.up:CONFIG.colors.down}">${fmt(p)}</span><span style="text-align:right">${q.toFixed(3)}</span>`;
+    const type = Math.random() > 0.5 ? 'up' : 'down'; // Mock direction as Binance AggTrade doesn't always show taker side clearly
+    
+    row.innerHTML = `
+      <span>${time}</span>
+      <span class="${type}">${fmt(p)}</span>
+      <span style="text-align:right">${q.toFixed(4)}</span>
+    `;
     els.feed.prepend(row);
-    if(els.feed.children.length > 40) els.feed.lastChild.remove();
+    if(els.feed.children.length > 50) els.feed.lastChild.remove();
   }
 
   // --- UTILS ---
-  function fmt(n) { return (n*state.rate).toLocaleString('en-US',{style:'currency',currency:state.currency==='USDT'?'USD':'INR'}); }
+  function fmt(n) { 
+    return (n*state.rate).toLocaleString('en-US',{
+      style:'currency',
+      currency:state.currency==='USDT'?'USD':'INR'
+    }); 
+  }
   
-  document.getElementById('addBtn').onclick = () => { document.getElementById('inputPanel').style.display='block'; document.getElementById('inputCoin').focus(); };
+  // Events
+  document.getElementById('addBtn').onclick = () => { 
+    document.getElementById('inputPanel').style.display='block'; 
+    document.getElementById('inputCoin').focus(); 
+  };
+  
   document.getElementById('inputCoin').onkeypress = (e) => {
     if(e.key === 'Enter') {
       const v = e.target.value.toUpperCase();
-      if(v) initCoin(v);
-      e.target.value = ''; document.getElementById('inputPanel').style.display='none';
+      if(v) {
+        initCoin(v, false); // Add to favorites
+        log(`Added user coin: ${v}`, 'usr');
+      }
+      e.target.value = ''; 
+      document.getElementById('inputPanel').style.display='none';
     }
   };
-  document.getElementById('currencySelector').onchange = (e) => { state.currency = e.target.value; state.rate = state.currency==='INR'?86.5:1; };
+  
+  document.getElementById('currencySelector').onchange = (e) => { 
+    state.currency = e.target.value; 
+    state.rate = state.currency==='INR'?86.5:1; 
+    log(`Currency changed to ${state.currency}`, 'cfg');
+  };
 
   // Init
-  CONFIG.defaultCoins.forEach(c => initCoin(c));
-  CONFIG.popularCoins.forEach(c => initCoin(c, true));
+  log('Booting Magic Internet Money v3.0...', 'sys');
+  CONFIG.favorites.forEach(c => initCoin(c, false));
+  CONFIG.trending.forEach(c => initCoin(c, true));
+  connect();
 
 })();
 </script>
