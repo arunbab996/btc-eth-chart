@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MIM | Visible Horizon</title>
+  <title>MIM | Instant Load Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -25,13 +25,13 @@
     * { box-sizing: border-box; }
     body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; width: 100vw; overflow: hidden; }
 
-    /* LAYOUT: STRICT GRID */
+    /* LAYOUT: Fixed Header + 3 Columns */
     .dashboard {
       display: grid;
       height: 100%;
       width: 100%;
-      grid-template-rows: 48px 1fr; /* Fixed Header, Rest is Content */
-      grid-template-columns: 280px 1fr 320px; /* Fixed Sidebars, Rest is Main */
+      grid-template-rows: 48px 1fr; 
+      grid-template-columns: 280px 1fr 320px;
       grid-template-areas: "head head head" "side main feed";
     }
 
@@ -42,7 +42,7 @@
       overflow: hidden; white-space: nowrap;
     }
     .brand-group { display: flex; align-items: center; gap: 16px; }
-    .brand { font-weight: 800; font-size: 14px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; color: #fff; }
+    .brand { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; color: #fff; }
     .metric { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-left: 1px solid #222; padding-left: 12px; }
     .metric span { color: var(--text); font-weight: 600; }
     .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
@@ -54,14 +54,18 @@
       display: flex; flex-direction: column; height: 100%; overflow: hidden;
     }
     .sec-head { 
-      flex: 0 0 auto; /* Don't shrink */
+      flex: 0 0 auto; 
       padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
       background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     }
     
-    /* Coin List: Limited height to allow Terminal to grow */
-    .coin-list { flex: 0 1 40%; overflow-y: auto; border-bottom: 1px solid var(--border); }
+    /* Coin List: FLEX GROW to fill space */
+    .coin-list { 
+      flex: 1; /* Takes all available space */
+      overflow-y: auto; border-bottom: 1px solid var(--border); 
+      min-height: 0; /* Crucial for scrolling */
+    }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
       padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
@@ -70,15 +74,16 @@
     .coin-row:hover { background: #111; }
     .coin-row.active { background: #111; border-left-color: var(--text); }
     
-    /* Terminal: Fills remaining vertical space */
+    /* Terminal: FIXED HEIGHT (Small & Compact) */
     .terminal-panel {
-      flex: 1; display: flex; flex-direction: column; min-height: 0; background: #020202;
+      flex: 0 0 180px; /* Fixed height */
+      display: flex; flex-direction: column; background: #020202;
     }
     .terminal-head { flex: 0 0 auto; background: #080808; color: #666; padding: 6px 16px; font-size: 9px; font-family: var(--mono); text-transform: uppercase; border-bottom: 1px solid #111; border-top: 1px solid #222; }
     .sys-log { 
       flex: 1; padding: 12px; font-family: var(--mono); font-size: 10px; 
-      overflow-y: hidden; /* We auto-scroll or trim */
-      color: #444; display: flex; flex-direction: column-reverse; /* Bottom-up */
+      overflow-y: hidden; 
+      color: #444; display: flex; flex-direction: column-reverse; 
     }
     .log-line { margin-bottom: 3px; word-break: break-all; line-height: 1.4; }
     .cursor { display: inline-block; width: 6px; height: 10px; background: var(--accent); animation: blink 1s infinite; vertical-align: middle; margin-left: 4px; }
@@ -90,9 +95,9 @@
       position: relative; min-width: 0; min-height: 0; overflow: hidden;
     }
     
-    /* KPI Bar: Fixed Height */
+    /* KPI Bar */
     .kpi-bar { 
-      flex: 0 0 70px; /* Rigid height */
+      flex: 0 0 70px; 
       display: grid; grid-template-columns: repeat(4, 1fr); 
       border-bottom: 1px solid var(--border); background: var(--panel); 
     }
@@ -101,11 +106,11 @@
     .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; white-space: nowrap; }
     .kpi-sub { font-size: 11px; color: #555; margin-top: 2px; }
 
-    /* Chart Area: Fills remaining space */
+    /* Chart Area */
     .chart-container { 
-      flex: 1; /* Takes all remaining height */
-      position: relative; width: 100%; background: var(--bg); 
-      min-height: 0; /* Critical for flexbox nesting */
+      flex: 1; position: relative; width: 100%; background: var(--bg); 
+      padding-bottom: 10px; 
+      min-height: 0; 
     }
 
     /* 4. FEED (Right) */
@@ -134,7 +139,7 @@
       <div class="brand-group">
         <div class="brand">
           <div class="live-dot"></div>
-          <span>MAGIC INTERNET MONEY</span>
+          <span>Magic Internet Money</span>
         </div>
         <div class="metric">MODE: <span>2s SMOOTH</span></div>
         <div class="metric">LATENCY: <span id="ping">12ms</span></div>
@@ -242,14 +247,12 @@
     },
     options: {
       responsive: true, 
-      maintainAspectRatio: false, // Critical for filling height
+      maintainAspectRatio: false, 
       layout: {
-        padding: {
-          left: 0, right: 20, top: 20, bottom: 40 // FORCE X-AXIS VISIBILITY (SAFE ZONE)
-        }
+        padding: { left: 0, right: 20, top: 20, bottom: 40 }
       },
       animation: {
-        duration: 1500,
+        duration: 1500, // Smooth glide for live ticks
         easing: 'linear'
       },
       interaction: { mode: 'index', intersect: false },
@@ -259,17 +262,12 @@
           display: true, 
           grid: { display: false, borderColor: '#333' },
           ticks: { 
-            color: '#666', 
-            font: { family: 'JetBrains Mono', size: 10 },
-            maxTicksLimit: 6,
-            maxRotation: 0,
-            autoSkip: true,
-            padding: 10 
+            color: '#666', font: { family: 'JetBrains Mono', size: 10 },
+            maxTicksLimit: 6, maxRotation: 0, autoSkip: true, padding: 15 
           }
         },
         y: { 
-          position: 'right', 
-          grid: { color: '#1a1a1a' }, 
+          position: 'right', grid: { color: '#1a1a1a' }, 
           ticks: { color: '#555', callback: v => v.toLocaleString() } 
         }
       }
@@ -281,7 +279,7 @@
     const wrapper = document.getElementById('sysLogContainer');
     const div = document.createElement('div');
     div.className = 'log-line';
-    const ts = new Date().toLocaleTimeString('en-GB');
+    const ts = new Date().toLocaleTimeString('en-GB'); 
     
     let color = '#555';
     if(type === 'NET') color = '#0ecb81';
@@ -291,19 +289,59 @@
     
     div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
-    
     if(wrapper.children.length > 100) wrapper.lastChild.remove();
+  }
+
+  // --- DATA LOADING ---
+  // Background fetch to populate graphs instantly
+  async function backfillHistory() {
+    log('Fetching historic data for all assets...', 'NET');
+    
+    // We use Promise.all to fetch in parallel. 
+    // Binance Limits: using 12 request is safe.
+    const promises = COINS.map(async (sym) => {
+      try {
+        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=1m&limit=50`);
+        const data = await res.json();
+        const coin = STATE.coins[sym];
+        
+        // Map Klines to our history format
+        // Kline format: [time, open, high, low, close, ...]
+        data.forEach(k => {
+          const price = parseFloat(k[4]); // Close price
+          const timeLabel = new Date(k[0]).toLocaleTimeString('en-GB');
+          coin.history.push(price);
+          coin.labels.push(timeLabel);
+          
+          // Set High/Last params
+          coin.price = price;
+          if(price > coin.high) coin.high = price;
+        });
+
+        // Update UI if this is the active coin
+        if(sym === STATE.active) {
+          loadCoin(sym, false); // false = no log
+        }
+        
+        // Update Sidebars
+        const pEl = document.getElementById(`p-${sym}`);
+        if(pEl) pEl.textContent = fmt(coin.price);
+
+      } catch(e) {
+        console.error(e);
+      }
+    });
+
+    await Promise.all(promises);
+    log('History Backfill Complete.', 'SYS');
   }
 
   // --- LOGIC ---
   function init() {
-    // BOOT SEQUENCE (Populates Terminal)
+    // BOOT LOGS
     setTimeout(() => log('BIOS Check... OK', 'SYS'), 0);
     setTimeout(() => log('Mounting Virtual DOM...', 'SYS'), 50);
-    setTimeout(() => log('Initializing Chart.js Canvas...', 'SYS'), 100);
-    setTimeout(() => log('Allocating Memory Buffers...', 'SYS'), 150);
-    setTimeout(() => log('Network Interface... UP', 'NET'), 200);
-    setTimeout(() => log('Connecting to Binance WebSocket API...', 'NET'), 250);
+    setTimeout(() => log('Allocating Memory Buffers...', 'SYS'), 100);
     
     const list = document.getElementById('coinList');
     
@@ -330,32 +368,46 @@
       list.appendChild(row);
     });
     
-    setTimeout(connect, 600);
-    setInterval(plotTick, PLOT_INTERVAL_MS);
+    // Start Data Flow
+    backfillHistory(); // HTTP Fetch
+    setTimeout(connect, 600); // WS Connect
+    setInterval(plotTick, PLOT_INTERVAL_MS); // Plot Loop
     
+    // Select default visually
+    setTimeout(() => {
+       document.getElementById('row-BTC').classList.add('active');
+       updateKPI(STATE.coins['BTC']);
+    }, 100);
+
     // Heartbeat
     setInterval(() => {
       const ms = (10 + Math.random()*15).toFixed(0);
-      const sz = (120 + Math.random()*500).toFixed(0);
-      log(`Heartbeat: ping=${ms}ms size=${sz}b`, 'HBEAT');
+      log(`Heartbeat: ping=${ms}ms stable`, 'HBEAT');
       document.getElementById('ping').innerText = `${ms}ms`;
-    }, 1500);
-
-    setTimeout(() => loadCoin('BTC'), 800);
+    }, 2000);
   }
 
-  function loadCoin(sym) {
+  function loadCoin(sym, doLog = true) {
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     document.getElementById(`row-${sym}`).classList.add('active');
     
     STATE.active = sym;
-    log(`Feed Switched -> ${sym}`, 'SYS');
+    if(doLog) log(`Feed Switched -> ${sym}`, 'SYS');
     document.getElementById('tradeFeed').innerHTML = ''; 
     
     const coin = STATE.coins[sym];
+    
+    // INSTANT SWAP: Disable animation for the swap to avoid morphing
+    chart.options.animation = false; 
+    
     chart.data.datasets[0].data = coin.history;
     chart.data.labels = coin.labels;
     chart.update(); 
+    
+    // Re-enable animation for next ticks
+    setTimeout(() => {
+      chart.options.animation = { duration: 1500, easing: 'linear' };
+    }, 50);
 
     // Dynamic Colors
     const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
@@ -390,12 +442,13 @@
   function plotTick() {
     COINS.forEach(sym => {
       const coin = STATE.coins[sym];
+      // Push buffer to history if we have fresh data
       if(coin.lastBufferPrice !== null) {
         const timeLabel = new Date().toLocaleTimeString('en-GB');
         coin.history.push(coin.lastBufferPrice);
         coin.labels.push(timeLabel);
         
-        if(coin.history.length > 30) { 
+        if(coin.history.length > 50) { 
           coin.history.shift(); 
           coin.labels.shift(); 
         }
@@ -475,7 +528,9 @@
 
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
+    // Clear history on currency change to avoid spikes
     Object.values(STATE.coins).forEach(c => { c.history=[]; c.labels=[]; });
+    backfillHistory(); // Re-fetch
     log(`Rebasing Currency to ${STATE.currency}`, 'SYS');
   };
 
