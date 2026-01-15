@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Magic Internet Money | Terminal</title>
+  <title>Magic Internet Money | Analyst Terminal</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- DEFINITIVE THEME --- */
+    /* --- ANALYST THEME --- */
     :root { 
-      --bg: #090909;          
-      --panel: #111;       
+      --bg: #050505;          
+      --panel: #0f0f0f;       
       --border: #222;      
       --text: #e0e0e0; 
-      --text-dim: #555;
-      --accent: #FFD700; /* Industrial Yellow */
+      --text-dim: #666;
+      --accent: #FFD700; 
       --green: #0ecb81;     
       --red: #f6465d;      
       --font: 'Inter', -apple-system, sans-serif;
@@ -25,41 +25,36 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; overflow: hidden; }
 
-    /* LAYOUT: CSS GRID */
+    /* LAYOUT */
     .dashboard {
       display: grid;
       height: 100vh;
-      grid-template-rows: 48px 1fr; /* Header | Content */
-      grid-template-columns: 280px 1fr 300px; /* Side | Main | Feed */
-      grid-template-areas: 
-        "head head head"
-        "side main feed";
+      grid-template-rows: 50px 1fr;
+      grid-template-columns: 260px 1fr 300px;
+      grid-template-areas: "head head head" "side main feed";
     }
 
-    /* 1. HEADER (Yellow Accent Area) */
+    /* 1. HEADER */
     .appbar {
-      grid-area: head;
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 16px;
-      border-top: 2px solid var(--accent); /* The Yellow Line */
+      grid-area: head; background: var(--panel); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+      border-top: 2px solid var(--accent);
     }
     .brand { font-weight: 800; font-size: 14px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
-    .status-dot { width: 6px; height: 6px; background: #333; border-radius: 50%; }
+    .status-dot { width: 6px; height: 6px; background: #333; border-radius: 50%; transition: 0.3s; }
     .status-dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); }
-    .pro-badge { background: var(--accent); color: #000; font-size: 9px; padding: 2px 4px; border-radius: 2px; font-weight: 700; font-family: var(--mono); }
+    .badge { background: #222; border: 1px solid #333; color: var(--accent); font-size: 9px; padding: 2px 5px; border-radius: 3px; font-family: var(--mono); }
 
     /* 2. SIDEBAR */
-    .sidebar { grid-area: side; background: #0c0c0c; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sidebar { grid-area: side; background: #0a0a0a; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
     
     .sec-header { 
-      padding: 12px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
+      padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-dim); 
       text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border);
       background: #111; display: flex; justify-content: space-between; align-items: center;
     }
     
-    .coin-list { overflow-y: auto; max-height: 30vh; }
+    .coin-list { overflow-y: auto; max-height: 35vh; }
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
       padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
@@ -68,32 +63,39 @@
     .coin-row:hover { background: #151515; }
     .coin-row.active { background: #1a1a1a; border-left-color: var(--accent); }
     
-    /* System Log (Red Box Area Filler) */
+    /* System Log (Terminal Style) */
     .sys-log-panel {
-      flex: 1; border-top: 1px solid var(--border); background: #050505;
+      flex: 1; border-top: 1px solid var(--border); background: #000;
       display: flex; flex-direction: column; min-height: 0;
     }
     .log-content {
       flex: 1; overflow-y: auto; padding: 10px; font-family: var(--mono); 
-      font-size: 10px; color: #444; display: flex; flex-direction: column-reverse; /* Newest at bottom visually */
+      font-size: 10px; color: #444; display: flex; flex-direction: column-reverse;
     }
-    .log-line { border-bottom: 1px solid #111; padding: 2px 0; white-space: nowrap; }
+    .log-line { padding: 2px 0; white-space: nowrap; }
+    .log-green { color: var(--green); }
+    .log-blue { color: #3b82f6; }
+    .log-red { color: var(--red); }
 
-    /* 3. MAIN (Chart & KPI) */
+    /* 3. MAIN PANEL */
     .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
     
     .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); }
-    .kpi-box { padding: 16px 20px; border-right: 1px solid var(--border); }
+    .kpi-box { padding: 16px 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
     .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
     .kpi-val { font-family: var(--mono); font-size: 18px; font-weight: 500; letter-spacing: -0.5px; }
-    
-    .chart-container { flex: 1; position: relative; width: 100%; background: var(--bg); padding: 0; }
 
-    /* 4. FEED (Right) */
-    .feed-panel { grid-area: feed; background: #0c0c0c; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    /* Sentiment Bar */
+    .sentiment-wrap { height: 4px; background: #222; width: 100%; display: flex; margin-top: 6px; border-radius: 2px; overflow: hidden; }
+    .bar-buy { background: var(--green); height: 100%; transition: width 0.5s; }
+    .bar-sell { background: var(--red); height: 100%; flex: 1; }
+    
+    .chart-container { flex: 1; position: relative; width: 100%; background: var(--bg); }
+
+    /* 4. FEED */
+    .feed-panel { grid-area: feed; background: #0a0a0a; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
     .trade-list { flex: 1; overflow-y: hidden; position: relative; }
     .trade-scroll { position: absolute; inset: 0; overflow-y: auto; }
-    
     .trade-row { 
       display: grid; grid-template-columns: 60px 1fr 60px; 
       padding: 4px 12px; font-family: var(--mono); font-size: 10px; 
@@ -108,25 +110,20 @@
     @keyframes flashG { 0% { color: #fff; background: rgba(14,203,129,0.2); } }
     @keyframes flashR { 0% { color: #fff; background: rgba(246,70,93,0.2); } }
 
-    /* RESPONSIVE */
-    @media(max-width: 1000px){
-      .dashboard { display: flex; flex-direction: column; height: auto; overflow-y: auto; }
-      .chart-container { height: 400px; }
-    }
+    @media(max-width: 1000px){ .dashboard { display: flex; flex-direction: column; overflow-y: auto; height: auto; } .chart-container { height: 400px; } }
   </style>
 </head>
 <body>
 
   <div class="dashboard">
-    
     <header class="appbar">
       <div class="brand">
         <div id="statusDot" class="status-dot"></div>
         <span>MAGIC INTERNET MONEY</span>
-        <span class="pro-badge">PRO v3.1</span>
+        <span class="badge">ANALYST v4.0</span>
       </div>
       <div>
-        <select id="currency" style="background:#000; color:#fff; border:1px solid #333; padding:4px 8px; font-size:11px; border-radius:4px">
+        <select id="currency" style="background:#111; color:#fff; border:1px solid #333; padding:4px 8px; font-size:11px; border-radius:4px">
           <option value="USDT">USDT</option>
           <option value="INR">INR</option>
         </select>
@@ -134,29 +131,22 @@
     </header>
 
     <aside class="sidebar">
-      <div class="sec-header">
-        <span>Watchlist</span>
-        <span style="opacity:0.5; cursor:pointer" onclick="alert('Demo Mode: Auto-Add enabled')">+</span>
-      </div>
+      <div class="sec-header">Watchlist</div>
       <div id="list-fav" class="coin-list"></div>
 
-      <div class="sec-header" style="border-top:1px solid var(--border)">
-        <span>Trending</span>
-      </div>
+      <div class="sec-header" style="border-top:1px solid var(--border)">Trending</div>
       <div id="list-trend" class="coin-list"></div>
 
       <div class="sys-log-panel">
         <div class="sec-header" style="background:transparent; border:none; padding-bottom:0">System Log</div>
-        <div id="sysLog" class="log-content">
-          <div class="log-line">System Initialized.</div>
-        </div>
+        <div id="sysLog" class="log-content"></div>
       </div>
     </aside>
 
     <main class="main-panel">
       <div class="kpi-grid">
         <div class="kpi-box">
-          <div class="kpi-lbl">Last Price</div>
+          <div class="kpi-lbl">Price</div>
           <div id="kpi-price" class="kpi-val">---</div>
         </div>
         <div class="kpi-box">
@@ -164,12 +154,18 @@
           <div id="kpi-change" class="kpi-val">---</div>
         </div>
         <div class="kpi-box">
-          <div class="kpi-lbl">Day High</div>
+          <div class="kpi-lbl">Session High</div>
           <div id="kpi-high" class="kpi-val">---</div>
         </div>
         <div class="kpi-box">
-          <div class="kpi-lbl">Vol</div>
-          <div id="kpi-vol" class="kpi-val">---</div>
+          <div class="kpi-lbl" style="display:flex; justify-content:space-between">
+            <span>Sentiment</span>
+            <span id="sentiment-val" style="color:#fff">50%</span>
+          </div>
+          <div class="sentiment-wrap">
+            <div id="bar-buy" class="bar-buy" style="width:50%"></div>
+            <div class="bar-sell"></div>
+          </div>
         </div>
       </div>
       
@@ -184,7 +180,6 @@
         <div class="trade-scroll" id="tradeFeed"></div>
       </div>
     </aside>
-
   </div>
 
 <script>
@@ -203,8 +198,30 @@
     coins: {}
   };
 
-  // --- CHART INIT (Performance Mode) ---
+  // --- CHART (With Crosshair Plugin) ---
   const ctx = document.getElementById('chart').getContext('2d');
+  
+  // Custom Plugin for Crosshair Line
+  const crosshairPlugin = {
+    id: 'crosshair',
+    afterDatasetsDraw: (chart) => {
+      if (chart.tooltip?._active?.length) {
+        const x = chart.tooltip._active[0].element.x;
+        const yAxis = chart.scales.y;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, yAxis.top);
+        ctx.lineTo(x, yAxis.bottom);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#333';
+        ctx.setLineDash([5, 5]); // Dashed line
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+
   const chart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -217,39 +234,58 @@
         backgroundColor: (context) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-          gradient.addColorStop(0, 'rgba(255, 215, 0, 0.1)'); // Yellow tint
+          gradient.addColorStop(0, 'rgba(255, 215, 0, 0.1)'); 
           gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
           return gradient;
         },
         fill: true,
         pointRadius: 0,
-        tension: 0.2 // Slight curve, not too heavy
+        pointHoverRadius: 4,
+        tension: 0.1
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: false, // Prevents "lag" feeling on fast data
+      animation: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false } },
+      plugins: { 
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          mode: 'index',
+          intersect: false,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleColor: '#888',
+          bodyColor: '#fff',
+          borderColor: '#333',
+          borderWidth: 1,
+          displayColors: false,
+          callbacks: {
+            title: (items) => items[0].label, // Show Time
+            label: (item) => fmt(item.raw)    // Show Price
+          }
+        }
+      },
       scales: {
-        x: { display: false },
+        x: { display: false }, // Hide X labels but keep grid alignment
         y: { 
           position: 'right', 
           grid: { color: CONFIG.colors.grid }, 
           ticks: { color: CONFIG.colors.text, callback: v => v.toLocaleString() } 
         }
       }
-    }
+    },
+    plugins: [crosshairPlugin]
   });
 
-  // --- LOGGING SYSTEM ---
-  function log(msg, type='SYS') {
+  // --- LOGGING ---
+  function log(msg, color='gray') {
     const box = document.getElementById('sysLog');
     const line = document.createElement('div');
-    line.className = 'log-line';
+    line.className = `log-line log-${color}`;
     const ts = new Date().toLocaleTimeString().split(' ')[0];
-    line.innerHTML = `<span style="color:#666">[${ts}]</span> <b style="color:#888">${type}</b> ${msg}`;
+    line.innerHTML = `<span style="opacity:0.5">[${ts}]</span> ${msg}`;
     box.prepend(line);
     if(box.children.length > 50) box.lastChild.remove();
   }
@@ -257,10 +293,10 @@
   // --- COIN LOGIC ---
   function initCoin(sym, containerId) {
     if(STATE.coins[sym]) return;
-    
     STATE.coins[sym] = {
-      price: 0, prev: 0, high: 0, vol: 0,
-      history: []
+      price: 0, prev: 0, high: 0,
+      buyVol: 0, sellVol: 0,
+      history: [], labels: []
     };
 
     const row = document.createElement('div');
@@ -280,23 +316,27 @@
     document.getElementById(containerId).appendChild(row);
   }
 
-  function handleTick(sym, price, vol) {
+  function handleTick(sym, price, qty, isBuyerMaker, time) {
     const coin = STATE.coins[sym];
     if(!coin) return;
 
     coin.prev = coin.price;
     coin.price = price;
     if(price > coin.high) coin.high = price;
-    coin.vol += vol;
+    
+    // Sentiment Logic (Approximation)
+    // isBuyerMaker = true -> Sell (Maker was buyer)
+    // isBuyerMaker = false -> Buy (Taker was buyer)
+    if(isBuyerMaker) coin.sellVol += qty;
+    else coin.buyVol += qty;
 
-    // Sidebar Update
+    // Sidebar UI
     const pEl = document.getElementById(`p-${sym}`);
     const cEl = document.getElementById(`c-${sym}`);
     if(pEl) {
       pEl.textContent = fmt(price);
-      // Flash animation
       pEl.className = price >= coin.prev ? 'flash-up' : 'flash-down';
-      setTimeout(() => pEl.className = '', 500); // Remove class
+      setTimeout(() => pEl.className = '', 500);
     }
     if(cEl && coin.prev) {
       const pct = ((price - coin.prev)/coin.prev)*100;
@@ -304,20 +344,25 @@
       cEl.style.color = pct >= 0 ? '#0ecb81' : '#f6465d';
     }
 
-    // If Active
+    // Active Coin Actions
     if(sym === STATE.active) {
+      const ts = new Date(time).toLocaleTimeString();
       coin.history.push(price);
-      if(coin.history.length > 100) coin.history.shift();
+      coin.labels.push(ts);
+      
+      if(coin.history.length > 100) {
+        coin.history.shift();
+        coin.labels.shift();
+      }
       
       // Update Chart
       chart.data.datasets[0].data = coin.history;
-      chart.data.labels = new Array(coin.history.length).fill('');
+      chart.data.labels = coin.labels;
       
-      // Auto Scale
       const min = Math.min(...coin.history);
       const max = Math.max(...coin.history);
-      chart.options.scales.y.min = min * 0.999;
-      chart.options.scales.y.max = max * 1.001;
+      chart.options.scales.y.min = min * 0.9995;
+      chart.options.scales.y.max = max * 1.0005;
       chart.update();
 
       // Update KPI
@@ -330,16 +375,16 @@
     document.getElementById(`row-${sym}`).classList.add('active');
     
     STATE.active = sym;
-    log(`View changed to ${sym}`, 'UI');
-    document.getElementById('tradeFeed').innerHTML = ''; // Clear feed
+    log(`Switched view to ${sym}`, 'blue');
+    document.getElementById('tradeFeed').innerHTML = ''; 
     
-    // Reset Chart Data immediately
+    // Reset visual data
     const coin = STATE.coins[sym];
-    coin.history = []; 
+    coin.history = []; coin.labels = [];
     chart.data.datasets[0].data = [];
     chart.update();
 
-    // Theme Color Swapping
+    // Theme Swap
     const colors = { 'BTC':'#FFD700', 'ETH':'#627EEA', 'SOL':'#14F195', 'XRP':'#FFF' };
     const c = colors[sym] || '#ffffff';
     chart.data.datasets[0].borderColor = c;
@@ -353,7 +398,6 @@
   function updateKPI(coin) {
     document.getElementById('kpi-price').textContent = fmt(coin.price);
     document.getElementById('kpi-high').textContent = fmt(coin.high);
-    document.getElementById('kpi-vol').textContent = parseInt(coin.vol).toLocaleString();
     
     if(coin.prev) {
       const pct = ((coin.price - coin.prev)/coin.prev)*100;
@@ -361,16 +405,27 @@
       el.textContent = pct.toFixed(2) + '%';
       el.style.color = pct >= 0 ? '#0ecb81' : '#f6465d';
     }
+
+    // Sentiment Bar
+    const total = coin.buyVol + coin.sellVol;
+    if(total > 0) {
+      const buyPct = (coin.buyVol / total) * 100;
+      document.getElementById('bar-buy').style.width = buyPct + '%';
+      document.getElementById('sentiment-val').textContent = buyPct.toFixed(0) + '% Buy';
+    }
+    
     document.title = `${fmt(coin.price)} ${STATE.active}`;
   }
 
-  function addTrade(sym, price, qty, time) {
+  function addTrade(sym, price, qty, time, isBuyerMaker) {
     if(sym !== STATE.active) return;
     const box = document.getElementById('tradeFeed');
     const row = document.createElement('div');
     row.className = 'trade-row';
     const ts = new Date(time).toLocaleTimeString().split(' ')[0];
-    const type = Math.random() > 0.5 ? 'up' : 'down';
+    // isBuyerMaker=true means SELL (Red), false means BUY (Green)
+    const type = isBuyerMaker ? 'down' : 'up'; 
+    
     row.innerHTML = `
       <span>${ts}</span>
       <span class="${type}">${fmt(price)}</span>
@@ -380,9 +435,9 @@
     if(box.children.length > 50) box.lastChild.remove();
   }
 
-  // --- NETWORKING ---
+  // --- NETWORK ---
   function connect() {
-    log('Initializing WebSocket connection...', 'NET');
+    log('Initializing WebSocket...', 'blue');
     const all = [...CONFIG.favorites, ...CONFIG.trending];
     const streams = all.map(c => c.toLowerCase()+'usdt@trade').join('/');
     
@@ -390,13 +445,13 @@
     
     ws.onopen = () => {
       document.getElementById('statusDot').classList.add('live');
-      log('Connection established.', 'NET');
-      log(`Subscribed to ${all.length} asset streams.`, 'SYS');
+      log('Connection established.', 'green');
+      log(`Subscribed to ${all.length} markets.`, 'green');
     };
     
     ws.onclose = () => {
       document.getElementById('statusDot').classList.remove('live');
-      log('Connection lost. Reconnecting...', 'ERR');
+      log('Connection lost. Retrying...', 'red');
       setTimeout(connect, 3000);
     };
 
@@ -406,13 +461,15 @@
         const s = msg.data.s.replace('USDT','');
         const p = parseFloat(msg.data.p);
         const q = parseFloat(msg.data.q);
-        handleTick(s, p, q);
-        addTrade(s, p, q, msg.data.T);
+        const m = msg.data.m; // isBuyerMaker
+        const t = msg.data.T;
+        
+        handleTick(s, p, q, m, t);
+        addTrade(s, p, q, t, m);
       }
     };
   }
 
-  // --- UTILS & EVENTS ---
   function fmt(n) { 
     return (n * STATE.rate).toLocaleString('en-US', {
       style:'currency', currency: STATE.currency==='USDT'?'USD':'INR'
@@ -422,14 +479,15 @@
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value;
     STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
-    log(`Currency set to ${STATE.currency}`, 'CFG');
+    log(`Currency set to ${STATE.currency}`, 'blue');
   };
 
-  // --- BOOT ---
+  // --- INIT ---
+  log('Booting Analyst Terminal...', 'blue');
   CONFIG.favorites.forEach(c => initCoin(c, 'list-fav'));
   CONFIG.trending.forEach(c => initCoin(c, 'list-trend'));
   connect();
-  setTimeout(() => switchCoin('BTC'), 500); // Auto-select BTC
+  setTimeout(() => switchCoin('BTC'), 500);
 
 })();
 </script>
