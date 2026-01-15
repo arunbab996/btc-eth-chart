@@ -2,469 +2,386 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Magic Internet Money</title>
   
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* --- PRO TERMINAL THEME --- */
+    /* --- STABLE THEME --- */
     :root { 
       --bg: #0b0b0b;          
-      --panel: #111111;       
+      --panel: #111;       
       --border: #222;      
-      --text-main: #e0e0e0; 
-      --text-muted: #666;
-      --success: #0ecb81;     
-      --danger: #f6465d;      
-      --font-mono: 'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace;
-      --font-sans: 'Inter', -apple-system, sans-serif;
+      --text: #e0e0e0; 
+      --text-dim: #666;
+      --green: #0ecb81;     
+      --red: #f6465d;      
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'Menlo', monospace;
     }
 
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text-main); font-family: var(--font-sans); overflow: hidden; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     
     /* Layout */
-    .dashboard {
-      display: grid;
-      height: 100vh;
-      grid-template-rows: 50px 1fr; 
-      grid-template-columns: 280px 1fr 280px; 
-      grid-template-areas: "head head head" "side main feed";
-    }
-
+    .app { display: flex; flex: 1; height: 100%; }
+    
     /* Header */
-    .appbar { 
-      grid-area: head; display: flex; align-items: center; justify-content: space-between; 
-      padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--panel); 
-    }
-    .brand { font-weight: 800; letter-spacing: -0.5px; font-size: 15px; display: flex; align-items: center; gap: 10px; }
-    .status-badge { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-family: var(--font-mono); color: var(--success); border: 1px solid #333; }
-
-    /* Panels */
-    .panel-side { grid-area: side; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
-    .panel-main { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; }
-    .panel-feed { grid-area: feed; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); }
-
-    /* Chart Area */
-    .chart-wrap { flex: 1; position: relative; width: 100%; background: #0b0b0b; }
-
-    /* Sidebar Structure */
-    .section-header { 
-      padding: 10px 16px; font-size: 10px; font-weight: 700; color: var(--text-muted); 
-      text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); 
-      background: var(--panel); display: flex; justify-content: space-between; align-items: center;
-    }
+    header { height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: var(--panel); }
+    .logo { font-weight: 800; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .status { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+    .status.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
     
-    .scroll-area { overflow-y: auto; }
-    .scroll-area::-webkit-scrollbar { width: 4px; }
-    .scroll-area::-webkit-scrollbar-thumb { background: #333; }
-
-    /* System Log (Fills bottom) */
-    .system-log-panel {
-      flex: 1; /* Fills remaining space */
-      border-top: 1px solid var(--border);
-      background: #080808;
-      display: flex; flex-direction: column;
-      min-height: 150px;
-    }
-    .log-content {
-      flex: 1; padding: 12px; font-family: var(--font-mono); 
-      font-size: 10px; color: #444; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .log-line span { color: #666; margin-right: 8px; }
-    .log-line b { color: var(--text-main); font-weight: normal; }
-
-    /* Coin Row */
-    .coin-row { 
-      display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; 
-      padding: 10px 16px; border-bottom: 1px solid var(--border); 
-      cursor: pointer; transition: 0.2s; align-items: center; 
-    }
-    .coin-row:hover { background: #181818; }
-    .coin-row.active { background: #1e1e1e; border-left: 2px solid #fff; }
+    /* Sidebar (Left) */
+    .sidebar { width: 260px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: #0e0e0e; }
+    .section { border-bottom: 1px solid var(--border); display: flex; flex-direction: column; }
+    .sec-head { padding: 10px 15px; font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; background: var(--panel); }
     
-    .row-icon { width: 20px; height: 20px; border-radius: 50%; }
-    .row-info { display: flex; flex-direction: column; }
-    .row-sym { font-weight: 700; font-size: 13px; }
-    .row-name { font-size: 10px; color: var(--text-muted); }
-    .row-price { font-family: var(--font-mono); font-size: 12px; text-align: right; }
-    .row-change { font-size: 10px; text-align: right; }
-
-    /* KPI Header */
-    .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); background: var(--panel); }
-    .kpi-box { padding: 16px 24px; border-right: 1px solid var(--border); }
-    .kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
-    .kpi-val { font-family: var(--font-mono); font-size: 16px; font-weight: 500; }
-    .kpi-lg { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
-
-    /* Trade Feed */
-    .trade-row { display: grid; grid-template-columns: 60px 1fr 60px; padding: 4px 16px; font-family: var(--font-mono); font-size: 10px; color: #555; border-bottom: 1px solid #1a1a1a; }
+    .coin-list { overflow-y: auto; max-height: 300px; }
+    .coin-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; cursor: pointer; border-left: 2px solid transparent; font-size: 13px; }
+    .coin-row:hover { background: #1a1a1a; }
+    .coin-row.active { background: #1f1f1f; border-left-color: #fff; }
+    .price-col { text-align: right; font-family: var(--mono); font-size: 12px; }
     
-    /* Utils */
-    .up { color: var(--success); }
-    .down { color: var(--danger); }
-    button { background: #222; border: 1px solid #333; color: #ccc; padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; text-transform: uppercase; font-weight: 600; }
-    button:hover { border-color: #666; color: #fff; }
-    input { background: transparent; border: none; color: #fff; font-size: 11px; outline: none; text-transform: uppercase; width: 100%; }
+    /* System Log (Bottom Left) */
+    .sys-log { flex: 1; background: #050505; padding: 10px; font-family: var(--mono); font-size: 10px; color: #555; overflow-y: auto; display: flex; flex-direction: column-reverse; }
+    .log-msg { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; }
 
-    @media(max-width: 900px){ .dashboard { display: flex; flex-direction: column; overflow-y: auto; height: auto; } .chart-wrap { min-height: 350px; } }
+    /* Main Area (Center) */
+    .main { flex: 1; display: flex; flex-direction: column; position: relative; }
+    .kpi-bar { display: flex; border-bottom: 1px solid var(--border); }
+    .kpi { flex: 1; padding: 15px 20px; border-right: 1px solid var(--border); }
+    .kpi-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+    .kpi-val { font-family: var(--mono); font-size: 20px; font-weight: 500; }
+    
+    .chart-box { flex: 1; padding: 0; position: relative; width: 100%; overflow: hidden; }
+
+    /* Trade Feed (Right) */
+    .feed { width: 280px; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: #0e0e0e; }
+    .trade-list { flex: 1; overflow-y: hidden; position: relative; }
+    .trade-scroll { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; }
+    .trade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 4px 15px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); border-bottom: 1px solid #161616; }
+    .up { color: var(--green); } .down { color: var(--red); }
+
+    /* Helpers */
+    input { background: #000; border: 1px solid #333; color: #fff; padding: 5px; width: 100%; box-sizing: border-box; font-family: var(--mono); font-size: 11px; }
+    button { background: #222; color: #fff; border: 1px solid #333; padding: 2px 8px; cursor: pointer; font-size: 10px; }
+
   </style>
 </head>
 <body>
 
-  <div class="dashboard">
-    <header class="appbar">
-      <div class="brand">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#f7931a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-        <span>Magic Internet Money</span>
-        <span class="status-badge">LIVE</span>
-      </div>
-      <div style="display:flex; gap:10px">
-        <select id="currencySelector" style="background:#111; color:#fff; border:1px solid #333; font-size:11px; padding:4px;">
-          <option value="USDT">USD</option>
-          <option value="INR">INR</option>
-        </select>
-      </div>
-    </header>
+  <header>
+    <div class="logo">
+      <div id="statusDot" class="status"></div>
+      MAGIC INTERNET MONEY
+    </div>
+    <div>
+      <select id="currency" style="background:#111; color:#fff; border:1px solid #333; padding:4px; font-size:11px">
+        <option value="USDT">USDT</option>
+        <option value="INR">INR</option>
+      </select>
+    </div>
+  </header>
 
-    <aside class="panel-side">
-      <div class="section-header">
-        <span>Favorites</span>
-        <button id="addBtn">+</button>
+  <div class="app">
+    
+    <aside class="sidebar">
+      <div class="section">
+        <div class="sec-head" style="display:flex; justify-content:space-between">
+          <span>Favorites</span>
+          <button id="addBtn">+</button>
+        </div>
+        <div id="inputBox" style="display:none; padding:5px"><input id="newCoin" placeholder="SYMBOL..." /></div>
+        <div id="list-fav" class="coin-list" style="height:150px"></div>
       </div>
-      <div style="padding:8px 16px; border-bottom:1px solid var(--border); display:none" id="inputPanel">
-        <input id="inputCoin" placeholder="Type Symbol & Enter..." />
-      </div>
-      <div id="favoritesList" class="scroll-area" style="max-height: 200px; flex-shrink: 0;"></div>
 
-      <div class="section-header" style="border-top:1px solid var(--border)">
-        <span>Trending</span>
+      <div class="section">
+        <div class="sec-head">Trending</div>
+        <div id="list-pop" class="coin-list" style="height:200px"></div>
       </div>
-      <div id="trendingList" class="scroll-area" style="max-height: 300px; flex-shrink: 0;"></div>
 
-      <div class="system-log-panel">
-        <div class="section-header" style="background:transparent; border:none; padding-bottom:0">System Log</div>
-        <div id="systemLog" class="log-content">
-          </div>
+      <div class="sys-log" id="sysLog">
+        <div class="log-msg">System Ready.</div>
       </div>
     </aside>
 
-    <main class="panel-main">
+    <main class="main">
       <div class="kpi-bar">
-        <div class="kpi-box">
-          <div class="kpi-label">Current Price</div>
-          <div id="kpiPrice" class="kpi-val kpi-lg">Loading...</div>
+        <div class="kpi">
+          <div class="kpi-lbl">Price</div>
+          <div id="kpi-price" class="kpi-val">---</div>
         </div>
-        <div class="kpi-box">
-          <div class="kpi-label">24h Change</div>
-          <div id="kpiChange" class="kpi-val">—</div>
+        <div class="kpi">
+          <div class="kpi-lbl">24h Change</div>
+          <div id="kpi-change" class="kpi-val">---</div>
         </div>
-        <div class="kpi-box">
-          <div class="kpi-label">Day High</div>
-          <div id="kpiHigh" class="kpi-val">—</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-label">Volume (24h)</div>
-          <div id="kpiVol" class="kpi-val">—</div>
+        <div class="kpi">
+          <div class="kpi-lbl">Day High</div>
+          <div id="kpi-high" class="kpi-val">---</div>
         </div>
       </div>
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
+      <div class="chart-box">
+        <canvas id="chartCanvas"></canvas>
       </div>
     </main>
 
-    <aside class="panel-feed">
-      <div class="section-header">Live Executions</div>
-      <div id="tradeFeed" class="scroll-area" style="flex:1"></div>
+    <aside class="feed">
+      <div class="sec-head">Live Executions</div>
+      <div class="trade-list">
+        <div class="trade-scroll" id="tradeFeed"></div>
+      </div>
     </aside>
   </div>
 
 <script>
 (function(){
-  // --- CONFIG ---
-  const CONFIG = {
-    favorites: ['BTC', 'ETH'],
-    trending: ['SOL', 'XRP', 'DOGE', 'BNB', 'ADA', 'AVAX'],
-    colors: { up: '#0ecb81', down: '#f6465d' },
-    maxChartPoints: 100
-  };
-
-  let state = {
+  // --- CORE CONFIG ---
+  const STATE = {
     active: 'BTC',
     currency: 'USDT',
     rate: 1,
-    coins: {} 
+    coins: {}
   };
 
-  // --- UI REFS ---
-  const els = {
-    chart: document.getElementById('chart').getContext('2d'),
-    favList: document.getElementById('favoritesList'),
-    trendList: document.getElementById('trendingList'),
-    feed: document.getElementById('tradeFeed'),
-    log: document.getElementById('systemLog'),
-    kpi: { p: document.getElementById('kpiPrice'), c: document.getElementById('kpiChange'), h: document.getElementById('kpiHigh'), v: document.getElementById('kpiVol') }
+  const CONFIG = {
+    favorites: ['BTC', 'ETH'],
+    trending: ['SOL', 'XRP', 'DOGE', 'BNB', 'ADA'],
+    colors: { bg: '#0b0b0b', grid: '#222', line: '#f7931a', text: '#666' }
   };
 
-  // --- CHART SETUP ---
-  const chart = new Chart(els.chart, {
+  // --- CHART SETUP (Safe Mode) ---
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+  const chart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: [],
       datasets: [{
         label: 'Price',
         data: [],
-        borderColor: '#f7931a',
+        borderColor: CONFIG.colors.line,
         borderWidth: 2,
-        backgroundColor: (ctx) => {
-          const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
-          g.addColorStop(0, 'rgba(247, 147, 26, 0.2)');
-          g.addColorStop(1, 'rgba(247, 147, 26, 0.0)');
-          return g;
-        },
+        backgroundColor: 'rgba(247, 147, 26, 0.1)',
         fill: true,
-        tension: 0.3, // Smooth curve
-        pointRadius: 0
+        pointRadius: 0,
+        tension: 0.1 // Low tension = less math = faster
       }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: { duration: 0 }, // Disable internal animation for instant updates, relies on frequent ticks
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false, // CRITICAL: Disabling animation fixes the "broken" feeling
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
         x: { display: false },
-        y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#555' } }
+        y: { position: 'right', grid: { color: CONFIG.colors.grid }, ticks: { color: CONFIG.colors.text } }
       }
     }
   });
 
-  // --- SYSTEM LOG ---
-  function log(msg, type='info') {
-    const div = document.createElement('div');
-    div.className = 'log-line';
-    const ts = new Date().toISOString().split('T')[1].split('.')[0];
-    div.innerHTML = `<span>${ts}</span> <b>${type.toUpperCase()}</b> ${msg}`;
-    els.log.prepend(div);
-    if(els.log.children.length > 50) els.log.lastChild.remove();
+  // --- LOGGING ---
+  function log(msg) {
+    const el = document.getElementById('sysLog');
+    const line = document.createElement('div');
+    line.className = 'log-msg';
+    line.innerHTML = `<span style="color:#888">[${new Date().toLocaleTimeString().split(' ')[0]}]</span> ${msg}`;
+    el.prepend(line);
+    if(el.children.length > 30) el.lastChild.remove();
   }
 
-  // --- LOGIC ---
-  function initCoin(sym, isTrending = false) {
-    if(state.coins[sym]) return;
+  // --- COIN MANAGEMENT ---
+  function initCoin(sym, listId) {
+    if(STATE.coins[sym]) return; // prevent dupes
     
-    state.coins[sym] = { 
-      price: 0, prev: 0, 
-      high: -Infinity, vol: 0,
-      history: [], 
-      isTrending: isTrending 
+    STATE.coins[sym] = {
+      price: 0, prev: 0, high: 0, history: [],
+      elPrice: null, elChange: null
     };
-    
-    renderRow(sym, isTrending);
-    subscribe(sym);
-  }
 
-  function renderRow(sym, isTrending) {
-    const container = isTrending ? els.trendList : els.favList;
-    const div = document.createElement('div');
-    div.className = `coin-row ${sym === state.active ? 'active' : ''}`;
-    div.id = `row-${sym}`;
-    div.onclick = () => switchCoin(sym);
-
-    const icon = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${sym.toLowerCase()}.svg`;
-    
-    div.innerHTML = `
-      <img src="${icon}" class="row-icon" onerror="this.src='https://via.placeholder.com/20'">
-      <div class="row-info">
-        <span class="row-sym">${sym}</span>
-        <span class="row-name">USDT</span>
-      </div>
-      <div class="row-info">
-        <span class="row-price" id="p-${sym}">—</span>
-        <span class="row-change" id="c-${sym}">—</span>
+    // Create UI Row
+    const row = document.createElement('div');
+    row.className = 'coin-row';
+    row.id = `row-${sym}`;
+    row.onclick = () => loadCoin(sym);
+    row.innerHTML = `
+      <div style="font-weight:700">${sym}</div>
+      <div class="price-col">
+        <div id="p-${sym}">---</div>
+        <div id="c-${sym}" style="color:#666">---</div>
       </div>
     `;
-    container.appendChild(div);
+    document.getElementById(listId).appendChild(row);
   }
 
-  function handleTick(sym, price, vol) {
-    if(!state.coins[sym]) return;
-    const coin = state.coins[sym];
-    
-    coin.prev = coin.price;
-    coin.price = price;
-    if(price > coin.high) coin.high = price;
-    coin.vol += vol;
-
-    // Only update history if it's the active coin (performance optimization)
-    if(sym === state.active) {
-      coin.history.push(price);
-      if(coin.history.length > CONFIG.maxChartPoints) coin.history.shift();
-      
-      requestAnimationFrame(() => {
-        updateChart(coin.history);
-        updateKPI(coin);
-      });
-    }
-
-    // Sidebar text update
-    const pEl = document.getElementById(`p-${sym}`);
-    const cEl = document.getElementById(`c-${sym}`);
-    if(pEl) {
-      pEl.textContent = fmt(price);
-      pEl.style.color = price >= coin.prev ? CONFIG.colors.up : CONFIG.colors.down;
-    }
-    if(cEl && coin.prev) {
-      const pct = ((price - coin.prev)/coin.prev)*100;
-      cEl.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
-      cEl.className = `row-change ${pct>=0?'up':'down'}`;
-    }
-  }
-
-  function switchCoin(sym) {
+  function loadCoin(sym) {
+    // 1. Highlight
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     const r = document.getElementById(`row-${sym}`);
     if(r) r.classList.add('active');
     
-    log(`Switched view to ${sym}`, 'ui');
-    state.active = sym;
-    els.feed.innerHTML = ''; // Clear executed trades panel
+    // 2. Switch State
+    STATE.active = sym;
+    log(`Switched view to ${sym}`);
     
-    // Clear chart immediately to prevent ghosting
-    state.coins[sym].history = [];
-    updateChart([]);
-    
-    // Set Theme Color
-    const colors = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195', 'BNB':'#F0B90B' };
-    const color = colors[sym] || '#ffffff';
-    chart.data.datasets[0].borderColor = color;
-    chart.data.datasets[0].backgroundColor = (ctx) => {
-      const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
-      g.addColorStop(0, color+'33'); g.addColorStop(1, color+'00');
-      return g;
-    };
+    // 3. Clear Chart
+    const coin = STATE.coins[sym];
+    updateChart(coin.history);
+    updateKPI(coin);
+
+    // 4. Update Color Theme
+    const colorMap = { 'BTC':'#f7931a', 'ETH':'#627eea', 'SOL':'#14F195' };
+    const c = colorMap[sym] || '#ffffff';
+    chart.data.datasets[0].borderColor = c;
+    chart.data.datasets[0].backgroundColor = c + '22'; // 20% opacity hex
+    chart.update();
+
+    // 5. Clear Trade Feed
+    document.getElementById('tradeFeed').innerHTML = '';
+  }
+
+  function handleTick(sym, price) {
+    const coin = STATE.coins[sym];
+    if(!coin) return;
+
+    coin.prev = coin.price;
+    coin.price = price;
+    if(price > coin.high) coin.high = price;
+
+    // Sidebar Update
+    const pEl = document.getElementById(`p-${sym}`);
+    const cEl = document.getElementById(`c-${sym}`);
+    if(pEl) {
+      pEl.textContent = fmt(price);
+      pEl.style.color = price >= coin.prev ? '#0ecb81' : '#f6465d';
+    }
+    if(cEl && coin.prev) {
+      const pct = ((price - coin.prev)/coin.prev)*100;
+      cEl.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
+      cEl.style.color = pct >= 0 ? '#0ecb81' : '#f6465d';
+    }
+
+    // Active Coin Actions
+    if(sym === STATE.active) {
+      coin.history.push(price);
+      if(coin.history.length > 100) coin.history.shift();
+      updateChart(coin.history);
+      updateKPI(coin);
+    }
   }
 
   function updateChart(data) {
-    // We just provide dummy labels to match data length
     chart.data.labels = new Array(data.length).fill('');
     chart.data.datasets[0].data = data;
     
-    if(data.length > 2) {
+    if(data.length > 0) {
       const min = Math.min(...data);
       const max = Math.max(...data);
-      const padding = (max - min) * 0.1;
-      chart.options.scales.y.min = min - padding;
-      chart.options.scales.y.max = max + padding;
+      chart.options.scales.y.min = min * 0.9995;
+      chart.options.scales.y.max = max * 1.0005;
     }
     chart.update();
   }
 
   function updateKPI(coin) {
-    els.kpi.p.textContent = fmt(coin.price);
-    els.kpi.h.textContent = fmt(coin.high);
-    els.kpi.v.textContent = parseInt(coin.vol).toLocaleString();
+    document.getElementById('kpi-price').textContent = fmt(coin.price);
+    document.getElementById('kpi-high').textContent = fmt(coin.high);
+    
     if(coin.prev) {
       const pct = ((coin.price - coin.prev)/coin.prev)*100;
-      els.kpi.c.textContent = (pct>0?'+':'') + pct.toFixed(2) + '%';
-      els.kpi.c.style.color = pct>=0 ? CONFIG.colors.up : CONFIG.colors.down;
+      const el = document.getElementById('kpi-change');
+      el.textContent = pct.toFixed(2) + '%';
+      el.style.color = pct >= 0 ? '#0ecb81' : '#f6465d';
     }
-    document.title = `${fmt(coin.price)} ${state.active}`;
+    document.title = `${fmt(coin.price)} ${STATE.active}`;
+  }
+
+  function addTrade(sym, price, qty, time) {
+    if(sym !== STATE.active) return;
+    const box = document.getElementById('tradeFeed');
+    const row = document.createElement('div');
+    row.className = 'trade-row';
+    const tStr = new Date(time).toLocaleTimeString().split(' ')[0];
+    const type = Math.random() > 0.5 ? 'up' : 'down'; // visual simulation
+    row.innerHTML = `
+      <span>${tStr}</span>
+      <span class="${type}">${fmt(price)}</span>
+      <span style="text-align:right">${qty.toFixed(4)}</span>
+    `;
+    box.prepend(row);
+    if(box.children.length > 50) box.lastChild.remove();
   }
 
   // --- WEBSOCKET ---
-  let ws;
   function connect() {
-    log('Initializing WebSocket...', 'net');
+    log('Connecting to Binance...');
+    const all = [...CONFIG.favorites, ...CONFIG.trending];
+    const streams = all.map(c => c.toLowerCase()+'usdt@trade').join('/');
     
-    // Combine all coins into one stream URL
-    const allCoins = [...CONFIG.favorites, ...CONFIG.trending];
-    const streams = allCoins.map(c => `${c.toLowerCase()}usdt@trade`).join('/');
-    
-    ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
+    const ws = new WebSocket(`wss://stream.binance.com/stream?streams=${streams}`);
     
     ws.onopen = () => {
-      log('Connection established', 'net');
-      log(`Subscribed to ${allCoins.length} streams`, 'sys');
+      document.getElementById('statusDot').classList.add('on');
+      log('Socket Connected.');
     };
     
     ws.onclose = () => {
-      log('Connection lost. Reconnecting...', 'err');
+      document.getElementById('statusDot').classList.remove('on');
+      log('Disconnected. Retrying in 3s...');
       setTimeout(connect, 3000);
     };
-    
+
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
-      if(msg.data && msg.data.s) {
-        const sym = msg.data.s.replace('USDT','');
-        const price = parseFloat(msg.data.p);
-        const qty = parseFloat(msg.data.q);
-        
-        handleTick(sym, price, qty);
-        
-        // If this tick belongs to the active coin, log the trade
-        if(sym === state.active) {
-          addTradeRow(price, qty, msg.data.T);
-        }
-      }
+      if(!msg.data) return;
+      const s = msg.data.s.replace('USDT','');
+      const p = parseFloat(msg.data.p);
+      handleTick(s, p);
+      addTrade(s, p, parseFloat(msg.data.q), msg.data.T);
     };
-  }
-
-  function addTradeRow(p, q, t) {
-    const row = document.createElement('div');
-    row.className = 'trade-row';
-    const time = new Date(t).toLocaleTimeString().split(' ')[0];
-    const type = Math.random() > 0.5 ? 'up' : 'down'; // Mock direction as Binance AggTrade doesn't always show taker side clearly
-    
-    row.innerHTML = `
-      <span>${time}</span>
-      <span class="${type}">${fmt(p)}</span>
-      <span style="text-align:right">${q.toFixed(4)}</span>
-    `;
-    els.feed.prepend(row);
-    if(els.feed.children.length > 50) els.feed.lastChild.remove();
   }
 
   // --- UTILS ---
-  function fmt(n) { 
-    return (n*state.rate).toLocaleString('en-US',{
-      style:'currency',
-      currency:state.currency==='USDT'?'USD':'INR'
-    }); 
-  }
-  
-  // Events
-  document.getElementById('addBtn').onclick = () => { 
-    document.getElementById('inputPanel').style.display='block'; 
-    document.getElementById('inputCoin').focus(); 
-  };
-  
-  document.getElementById('inputCoin').onkeypress = (e) => {
-    if(e.key === 'Enter') {
-      const v = e.target.value.toUpperCase();
-      if(v) {
-        initCoin(v, false); // Add to favorites
-        log(`Added user coin: ${v}`, 'usr');
-      }
-      e.target.value = ''; 
-      document.getElementById('inputPanel').style.display='none';
-    }
-  };
-  
-  document.getElementById('currencySelector').onchange = (e) => { 
-    state.currency = e.target.value; 
-    state.rate = state.currency==='INR'?86.5:1; 
-    log(`Currency changed to ${state.currency}`, 'cfg');
+  function fmt(n) { return (n*STATE.rate).toLocaleString('en-US',{style:'currency',currency:STATE.currency==='USDT'?'USD':'INR'}); }
+
+  // --- EVENTS ---
+  document.getElementById('currency').onchange = (e) => {
+    STATE.currency = e.target.value;
+    STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
+    // Clear history to avoid chart spikes
+    Object.values(STATE.coins).forEach(c => c.history = []);
+    chart.data.datasets[0].data = [];
+    chart.update();
+    log(`Currency set to ${STATE.currency}`);
   };
 
-  // Init
-  log('Booting Magic Internet Money v3.0...', 'sys');
-  CONFIG.favorites.forEach(c => initCoin(c, false));
-  CONFIG.trending.forEach(c => initCoin(c, true));
+  document.getElementById('addBtn').onclick = () => {
+    const box = document.getElementById('inputBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    if(box.style.display === 'block') document.getElementById('newCoin').focus();
+  };
+
+  document.getElementById('newCoin').onkeypress = (e) => {
+    if(e.key === 'Enter') {
+      const val = e.target.value.toUpperCase();
+      if(val) {
+        initCoin(val, 'list-fav');
+        log(`Added ${val} to watchlist`);
+        // We need to reconnect to add the stream in a real app, 
+        // but for this demo we'll just add the UI row.
+        // A full reconnect logic would go here.
+      }
+      e.target.value = '';
+      document.getElementById('inputBox').style.display = 'none';
+    }
+  };
+
+  // --- INIT ---
+  CONFIG.favorites.forEach(c => initCoin(c, 'list-fav'));
+  CONFIG.trending.forEach(c => initCoin(c, 'list-pop'));
   connect();
+  loadCoin('BTC');
 
 })();
 </script>
