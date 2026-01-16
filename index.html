@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>MIM | Mobile Commander</title>
+  <title>MIM | Mobile Native</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -25,12 +25,12 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); height: 100vh; width: 100vw; overflow: hidden; }
 
-    /* LAYOUT: DESKTOP GRID */
+    /* LAYOUT: DESKTOP DEFAULT */
     .dashboard {
       display: grid;
       height: 100%;
       width: 100%;
-      grid-template-rows: 50px 1fr;
+      grid-template-rows: 48px 1fr;
       grid-template-columns: 280px 1fr 320px;
       grid-template-areas: "head head head" "side main feed";
     }
@@ -46,8 +46,7 @@
     .metric-group { display: flex; gap: 16px; margin-left: 20px; }
     .metric { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-left: 1px solid #222; padding-left: 12px; }
     .metric span { color: var(--text); font-weight: 600; }
-    
-    .logo-svg { width: 24px; height: 24px; filter: drop-shadow(0 0 5px rgba(247, 147, 26, 0.4)); }
+    .logo-svg { width: 20px; height: 20px; filter: drop-shadow(0 0 5px rgba(247, 147, 26, 0.4)); }
 
     /* 2. SIDEBAR */
     .sidebar { 
@@ -55,11 +54,11 @@
       display: flex; flex-direction: column; height: 100%; overflow: hidden;
     }
     .sec-head { 
-      flex: 0 0 auto; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+      flex: 0 0 auto; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--panel);
     }
     #searchInput {
       width: 100%; background: #111; border: 1px solid #222; color: #fff;
-      padding: 8px 10px; font-family: var(--mono); font-size: 12px; border-radius: 4px;
+      padding: 6px 10px; font-family: var(--mono); font-size: 11px; border-radius: 4px;
       outline: none; transition: border-color 0.2s;
     }
     #searchInput:focus { border-color: #444; }
@@ -72,7 +71,7 @@
 
     .coin-row { 
       display: flex; justify-content: space-between; align-items: center; 
-      padding: 12px 16px; cursor: pointer; border-left: 2px solid transparent; 
+      padding: 10px 16px; cursor: pointer; border-left: 2px solid transparent; 
       font-size: 13px; transition: background 0.1s; border-bottom: 1px solid #0e0e0e;
     }
     .coin-row:hover { background: #111; }
@@ -90,22 +89,18 @@
     /* 3. MAIN */
     .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0; overflow: hidden; }
     
-    /* Toolbar */
     .chart-toolbar {
-      flex: 0 0 42px; border-bottom: 1px solid var(--border); background: var(--panel);
-      display: flex; align-items: center; padding: 0 16px; gap: 8px; overflow-x: auto;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      flex: 0 0 36px; border-bottom: 1px solid var(--border); background: var(--panel);
+      display: flex; align-items: center; padding: 0 16px; gap: 8px;
     }
-    .chart-toolbar::-webkit-scrollbar { display: none; }
-    
     .tf-btn {
-      background: transparent; border: 1px solid #333; color: #666; font-size: 11px;
-      padding: 4px 12px; border-radius: 4px; cursor: pointer; font-family: var(--font);
-      font-weight: 600; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+      background: transparent; border: 1px solid #333; color: #666; font-size: 10px;
+      padding: 3px 10px; border-radius: 4px; cursor: pointer; font-family: var(--font);
+      font-weight: 600; transition: 0.2s; white-space: nowrap;
     }
     .tf-btn.active { background: #222; color: #fff; border-color: #fff; }
     .tf-btn.live-active { background: #081a0f; color: var(--green); border-color: var(--green); box-shadow: 0 0 5px rgba(14,203,129,0.2); }
-    .divider { width: 1px; height: 16px; background: #333; margin: 0 4px; flex-shrink: 0; }
+    .divider { width: 1px; height: 16px; background: #333; margin: 0 4px; }
 
     /* KPI */
     .kpi-bar { 
@@ -117,59 +112,48 @@
     .kpi-val { font-family: var(--mono); font-size: 20px; font-weight: 500; letter-spacing: -0.5px; white-space: nowrap; }
     .kpi-sub { font-size: 11px; color: #555; margin-top: 2px; }
 
-    /* Chart */
     .chart-container { flex: 1; position: relative; width: 100%; background: var(--bg); padding-bottom: 10px; min-height: 0; }
 
     /* 4. FEED */
     .feed-panel { grid-area: feed; background: #050505; border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
     .feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
-    .trade-row { display: flex; align-items: center; justify-content: space-between; height: 28px; padding: 0 12px; position: relative; font-family: var(--mono); font-size: 11px; color: var(--text-dim); border-bottom: 1px solid #0e0e0e; overflow: hidden; }
+    .trade-row { display: flex; align-items: center; justify-content: space-between; height: 24px; padding: 0 12px; position: relative; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-bottom: 1px solid #0e0e0e; overflow: hidden; }
     .vol-bar { position: absolute; top: 0; bottom: 0; right: 0; opacity: 0.15; z-index: 0; transition: width 0.2s; }
     .row-content { position: relative; z-index: 1; display: flex; width: 100%; justify-content: space-between; }
-    
     .up { color: var(--green); } .down { color: var(--red); }
 
     /* --- MOBILE OPTIMIZATIONS --- */
     @media (max-width: 900px) {
       body { height: auto; overflow-y: auto; }
-      .dashboard {
-        display: flex; flex-direction: column;
-        height: auto;
-        overflow: visible;
-      }
+      .dashboard { display: flex; flex-direction: column; height: auto; overflow: visible; }
       
-      /* Order Re-shuffle */
-      .appbar { order: 1; position: sticky; top: 0; }
+      /* Order Stack */
+      .appbar { order: 1; position: sticky; top: 0; border-bottom: none; /* FIX 1: Remove Line */ }
       .main-panel { order: 2; height: auto; display: block; }
-      .sidebar { order: 3; height: 400px; border-right: none; border-bottom: 1px solid var(--border); }
-      .feed-panel { order: 4; height: 350px; border-left: none; }
+      .sidebar { order: 3; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .feed-panel { order: 4; height: 400px; border-left: none; }
 
-      /* Metric Hiding */
       .metric-group { display: none; }
       
-      /* KPI 2x2 */
-      .kpi-bar {
-        height: auto;
-        grid-template-columns: 1fr 1fr;
-        border-bottom: 1px solid var(--border);
-      }
-      .kpi-box {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--border);
-      }
+      /* KPI Compact */
+      .kpi-bar { height: auto; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+      .kpi-box { padding: 12px 16px; border-bottom: 1px solid var(--border); }
       .kpi-box:nth-child(2n) { border-right: none; }
       
-      /* Chart Fixed Height */
-      .chart-container {
-        height: 350px;
-        min-height: 350px;
+      /* Chart Compact */
+      .chart-container { 
+        height: 260px; /* FIX 3: Reduced Height */
+        min-height: 260px;
+        padding-bottom: 0; /* Remove padding to pull watchlist up */
       }
       
-      /* Toolbar Scroll */
-      .chart-toolbar {
-        overflow-x: auto;
-        justify-content: flex-start;
-      }
+      /* Toolbar Scrollable */
+      .chart-toolbar { overflow-x: auto; justify-content: flex-start; padding-left: 12px; }
+      .tf-btn { padding: 6px 14px; font-size: 11px; } /* Larger touch target */
+      
+      /* Watchlist */
+      .coin-list { max-height: none; height: auto; }
+      .terminal-panel { height: 200px; }
     }
   </style>
 </head>
@@ -181,12 +165,10 @@
         <svg class="logo-svg" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="15" fill="#f7931a"/><path d="M23.189 14.02c.314-2.096-1.283-3.223-3.465-3.975l.708-2.84-1.728-.43-.69 2.765c-.454-.114-.92-.22-1.385-.326l.695-2.783L15.596 6l-.708 2.839c-.376-.086-.746-.17-1.104-.26l.002-.009-2.384-.595-.46 1.846s1.283.294 1.256.312c.7.175.826.638.805 1.006l-.806 3.235c.048.012.11.03.18.057l-.183-.045-1.13 4.532c-.086.212-.303.531-.793.41.018.025-1.256-.313-1.256-.313l-.858 1.978 2.25.561c.418.105.828.215 1.231.318l-.715 2.872 1.727.43.708-2.84c.472.127.93.245 1.378.357l-.706 2.828 1.728.43.715-2.866c2.948.558 5.164.333 6.097-2.333.752-2.146-.037-3.402-1.594-4.212 1.132-.26 1.986-.998 2.214-2.522zm-3.96 5.603c-.54 2.16-4.18 1.99-5.36 1.697l.956-3.832c1.18.294 4.966.877 4.404 2.135zm.536-5.632c-.493 1.973-3.535 1.777-4.522 1.532l.868-3.48c.987.245 4.155.702 3.654 1.948z" fill="#fff"/></svg>
         <span class="brand">Magic Internet Money</span>
       </div>
-      
       <div class="brand-group metric-group">
         <div class="metric">LATENCY: <span id="ping">12ms</span></div>
         <div class="metric">GAS: <span id="gas">15</span></div>
       </div>
-
       <div>
         <select id="currency" style="background:#111; color:#fff; border:1px solid #333; padding:4px 8px; font-size:11px; border-radius:4px; font-family:var(--mono)">
           <option value="USDT">USDT</option>
@@ -240,7 +222,6 @@
         <input id="searchInput" placeholder="FILTER ASSETS..." autocomplete="off">
       </div>
       <div id="coinList" class="coin-list"></div>
-      
       <div class="terminal-panel">
         <div class="terminal-head">Terminal Output_</div>
         <div class="sys-log" id="sysLogContainer">
@@ -262,25 +243,18 @@
 
 <script>
 (function(){
-  // --- CONFIG ---
   const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'DOT', 'LINK', 'LTC', 'MATIC'];
   const COLORS = {
     'BTC': '#f7931a', 'ETH': '#627eea', 'SOL': '#14F195', 'BNB': '#F0B90B',
     'XRP': '#ffffff', 'DOGE': '#cb9800', 'ADA': '#0033ad', 'AVAX': '#e84142',
     'DOT': '#e6007a', 'LINK': '#2a5ada', 'LTC': '#345D9D', 'MATIC': '#8247E5'
   };
-  const PLOT_INTERVAL_MS = 2000; 
   
-  const STATE = {
-    active: 'BTC',
-    currency: 'USDT',
-    rate: 1,
-    mode: 'LIVE', 
-    showSMA: false,
-    coins: {} 
-  };
+  const STATE = { active: 'BTC', currency: 'USDT', rate: 1, mode: 'LIVE', showSMA: false, coins: {} };
+  
+  // DETECT MOBILE
+  const isMobile = window.innerWidth < 900;
 
-  // --- CHART CONFIG ---
   const ctx = document.getElementById('chart').getContext('2d');
   
   const chart = new Chart(ctx, {
@@ -301,42 +275,46 @@
             return g;
           },
           fill: true,
-          tension: 0.2,
-          order: 2
+          tension: 0.2
         },
         {
-          label: 'SMA 20',
+          label: 'SMA',
           data: [],
-          borderColor: '#F0B90B', // Yellow SMA
+          borderColor: '#F0B90B',
           borderWidth: 1,
           pointRadius: 0,
           fill: false,
           tension: 0.4,
-          hidden: true,
-          order: 1
+          hidden: true
         }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false, 
-      layout: { padding: { left: 0, right: 20, top: 20, bottom: 40 } },
+      layout: { padding: { left: 0, right: 10, top: 20, bottom: isMobile ? 10 : 30 } },
       animation: { duration: 0 },
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
         x: { 
           display: true, grid: { display: false, borderColor: '#333' },
-          ticks: { color: '#666', font: { family: 'Inter', size: 11 }, maxTicksLimit: 8, maxRotation: 0, autoSkip: true, padding: 10 }
+          ticks: { 
+            // FIX 2: System Font + Limit Ticks on Mobile
+            color: '#666', 
+            font: { family: '-apple-system, sans-serif', size: 10 }, 
+            maxTicksLimit: isMobile ? 3 : 8, 
+            maxRotation: 0, autoSkip: true, padding: 10 
+          }
         },
         y: { 
           position: 'right', grid: { color: '#1a1a1a' }, 
-          ticks: { color: '#555', font: { family: 'Inter', size: 11 }, callback: v => v.toLocaleString() } 
+          // FIX 2: System Font
+          ticks: { color: '#555', font: { family: '-apple-system, sans-serif', size: 10 }, callback: v => v.toLocaleString() } 
         }
       }
     }
   });
 
-  // --- SMA CALC ---
   function calculateSMA(data, window) {
     if(!data || data.length < window) return [];
     let sma = [];
@@ -349,7 +327,6 @@
     return sma;
   }
 
-  // --- LOGGING ---
   function log(msg, type='SYS') {
     const wrapper = document.getElementById('sysLogContainer');
     const div = document.createElement('div');
@@ -360,12 +337,10 @@
     if(type === 'ERR') color = '#f6465d';
     div.innerHTML = `<span style="color:${color}">[${type}]</span> <span style="opacity:0.6">${ts}</span> ${msg}`;
     wrapper.insertBefore(div, wrapper.firstChild);
-    if(wrapper.children.length > 100) wrapper.lastChild.remove();
+    if(wrapper.children.length > 50) wrapper.lastChild.remove();
   }
 
-  // --- DATA ENGINE ---
   async function fetchMarketData() {
-    log('Syncing market stats...', 'NET');
     try {
       const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
       const allStats = await res.json();
@@ -385,7 +360,7 @@
 
   async function fetchHistory(sym, tf) {
     if(tf === 'LIVE') return null; 
-    log(`Fetching ${tf} candles...`, 'NET');
+    log(`Loading ${tf} data...`, 'NET');
     try {
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=100`);
       const data = await res.json();
@@ -403,9 +378,7 @@
     STATE.mode = mode;
     document.querySelectorAll('.tf-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('live-active'); });
     const btnId = mode === 'LIVE' ? 'btn-live' : `btn-${mode}`;
-    const btn = document.getElementById(btnId);
-    if(mode === 'LIVE') btn.classList.add('live-active');
-    else btn.classList.add('active');
+    document.getElementById(btnId).classList.add(mode === 'LIVE' ? 'live-active' : 'active');
 
     if(mode === 'LIVE') {
       const coin = STATE.coins[STATE.active];
@@ -418,15 +391,10 @@
 
   window.toggleSMA = function() {
     STATE.showSMA = !STATE.showSMA;
-    const btn = document.getElementById('smaBtn');
-    btn.innerText = `SMA: ${STATE.showSMA ? 'ON' : 'OFF'}`;
-    btn.style.color = STATE.showSMA ? '#F0B90B' : '#666';
-    btn.style.borderColor = STATE.showSMA ? '#F0B90B' : '#333';
-    
+    document.getElementById('smaBtn').innerText = `SMA: ${STATE.showSMA ? 'ON' : 'OFF'}`;
     chart.data.datasets[1].hidden = !STATE.showSMA;
     if(STATE.showSMA) {
-      const prices = chart.data.datasets[0].data;
-      chart.data.datasets[1].data = calculateSMA(prices, 20);
+      chart.data.datasets[1].data = calculateSMA(chart.data.datasets[0].data, 20);
     }
     chart.update();
   }
@@ -440,19 +408,16 @@
     chart.data.datasets[0].borderColor = c;
     chart.data.datasets[0].backgroundColor = (ctx) => {
       const g = ctx.chart.ctx.createLinearGradient(0,0,0,400);
-      g.addColorStop(0, c+'33'); 
-      g.addColorStop(1, c+'00');
+      g.addColorStop(0, c+'33'); g.addColorStop(1, c+'00');
       return g;
     };
 
     if(STATE.showSMA) {
       chart.data.datasets[1].data = calculateSMA(data, 20);
     }
-
     chart.update();
   }
 
-  // --- INIT ---
   async function init() {
     log('System Boot...', 'SYS');
     const list = document.getElementById('coinList');
@@ -462,13 +427,7 @@
       row.className = 'coin-row';
       row.id = `row-${sym}`;
       row.onclick = () => loadCoin(sym);
-      row.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px">
-          <img src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${sym.toLowerCase()}.svg" width="16" onerror="this.style.display='none'">
-          <b style="font-family:var(--mono)">${sym}</b>
-        </div>
-        <div class="row-meta"><div id="p-${sym}" class="row-price">...</div></div>
-      `;
+      row.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><img src="https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${sym.toLowerCase()}.svg" width="16"><b style="font-family:var(--mono)">${sym}</b></div><div class="row-meta"><div id="p-${sym}" class="row-price">...</div></div>`;
       list.appendChild(row);
     });
 
@@ -480,7 +439,12 @@
         const coin = STATE.coins[sym];
         data.forEach(k => {
           coin.liveHistory.push(parseFloat(k[4]));
-          coin.liveLabels.push(new Date(k[0]).toLocaleTimeString('en-GB'));
+          // FIX 2: Short Time Format on Mobile
+          const t = new Date(k[0]);
+          const tStr = isMobile 
+            ? t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) 
+            : t.toLocaleTimeString('en-GB');
+          coin.liveLabels.push(tStr);
           coin.price = parseFloat(k[4]);
         });
         document.getElementById(`p-${sym}`).innerText = fmt(coin.price);
@@ -490,13 +454,8 @@
     
     await loadCoin('BTC', false);
     connect();
-    setInterval(plotTick, PLOT_INTERVAL_MS);
+    setInterval(plotTick, 2000);
     
-    setInterval(() => {
-      const ms = (10 + Math.random()*15).toFixed(0);
-      document.getElementById('ping').innerText = `${ms}ms`;
-    }, 2000);
-
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const val = e.target.value.toUpperCase();
       COINS.forEach(sym => {
@@ -509,7 +468,7 @@
     document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('active'));
     document.getElementById(`row-${sym}`).classList.add('active');
     STATE.active = sym;
-    if(doLog) log(`Feed Switched -> ${sym}`, 'SYS');
+    if(doLog) log(`Feed -> ${sym}`, 'SYS');
     document.getElementById('tradeFeed').innerHTML = ''; 
     
     if(STATE.mode === 'LIVE') {
@@ -537,9 +496,13 @@
     COINS.forEach(sym => {
       const coin = STATE.coins[sym];
       if(coin.lastBufferPrice !== null) {
-        const timeLabel = new Date().toLocaleTimeString('en-GB');
+        const t = new Date();
+        const tStr = isMobile 
+            ? t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) 
+            : t.toLocaleTimeString('en-GB');
+        
         coin.liveHistory.push(coin.lastBufferPrice);
-        coin.liveLabels.push(timeLabel);
+        coin.liveLabels.push(tStr);
         if(coin.liveHistory.length > 50) { 
           coin.liveHistory.shift(); 
           coin.liveLabels.shift(); 
@@ -552,17 +515,12 @@
       if(activeCoin.liveHistory.length > 0) {
         chart.data.datasets[0].data = activeCoin.liveHistory;
         chart.data.labels = activeCoin.liveLabels;
-        
         const min = Math.min(...activeCoin.liveHistory);
         const max = Math.max(...activeCoin.liveHistory);
         const pad = (max - min) * 0.1;
         chart.options.scales.y.min = min - pad;
         chart.options.scales.y.max = max + pad;
-        
-        if(STATE.showSMA) {
-          chart.data.datasets[1].data = calculateSMA(activeCoin.liveHistory, 20);
-        }
-
+        if(STATE.showSMA) chart.data.datasets[1].data = calculateSMA(activeCoin.liveHistory, 20);
         chart.update();
       }
     }
@@ -575,17 +533,14 @@
       const chgEl = document.getElementById('kpiChange');
       chgEl.textContent = (chg > 0 ? '+' : '') + chg.toFixed(2) + '%';
       chgEl.style.color = chg >= 0 ? '#0ecb81' : '#f6465d';
-      
-      document.getElementById('kpiVol').innerText = fmtLarge(coin.stats.vol);
+      document.getElementById('kpiVol').innerText = (coin.stats.vol/1e6).toFixed(1) + 'M';
       document.getElementById('kpiHigh').innerText = fmt(coin.stats.high);
     }
-    document.title = `${fmt(coin.price)} ${STATE.active}`;
   }
 
   function addTrade(sym, price, qty, isMaker) {
     if(sym !== STATE.active) return;
     const val = price * qty;
-    const widthPct = Math.min((val / 50000) * 100, 100); 
     const sideClass = isMaker ? 'down' : 'up'; 
     const barColor = isMaker ? 'rgba(246,70,93,0.15)' : 'rgba(14,203,129,0.15)';
     
@@ -593,14 +548,14 @@
     row.className = 'trade-row';
     const bar = document.createElement('div');
     bar.className = 'vol-bar';
-    bar.style.width = widthPct + '%';
+    bar.style.width = Math.min((val / 50000) * 100, 100) + '%';
     bar.style.background = barColor;
     
     const content = document.createElement('div');
     content.className = 'row-content';
     const time = new Date().toLocaleTimeString('en-GB');
     
-    content.innerHTML = `<span>${time}</span><span class="${sideClass}">${fmt(price)}</span><span>${val > 10000 ? (val/1000).toFixed(1)+'K' : val.toFixed(0)}</span>`;
+    content.innerHTML = `<span>${time}</span><span class="${sideClass}">${fmt(price)}</span><span>${val.toFixed(0)}</span>`;
     row.appendChild(bar); row.appendChild(content);
     
     const feed = document.getElementById('tradeFeed');
@@ -624,7 +579,6 @@
   }
 
   function fmt(n) { return (n * STATE.rate).toLocaleString('en-US', { style:'currency', currency: STATE.currency==='USDT'?'USD':'INR' }); }
-  function fmtLarge(n) { if(n >= 1e9) return (n/1e9).toFixed(2) + 'B'; if(n >= 1e6) return (n/1e6).toFixed(2) + 'M'; return n.toLocaleString(); }
 
   document.getElementById('currency').onchange = (e) => {
     STATE.currency = e.target.value; STATE.rate = STATE.currency === 'INR' ? 86.5 : 1;
