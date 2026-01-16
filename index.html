@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>MIM | Mobile Native</title>
+  <title>MIM | Breathing Room</title>
   <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23f7931a'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='white'>฿</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -30,7 +30,7 @@
       display: grid;
       height: 100%;
       width: 100%;
-      grid-template-rows: 48px 1fr;
+      grid-template-rows: 56px 1fr; /* Increased Header Height */
       grid-template-columns: 280px 1fr 320px;
       grid-template-areas: "head head head" "side main feed";
     }
@@ -42,11 +42,11 @@
       overflow: hidden; white-space: nowrap; z-index: 10;
     }
     .brand-group { display: flex; align-items: center; gap: 12px; }
-    .brand { font-weight: 700; font-size: 15px; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; color: #fff; }
+    .brand { font-weight: 700; font-size: 16px; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; color: #fff; }
     .metric-group { display: flex; gap: 16px; margin-left: 20px; }
     .metric { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-left: 1px solid #222; padding-left: 12px; }
     .metric span { color: var(--text); font-weight: 600; }
-    .logo-svg { width: 20px; height: 20px; filter: drop-shadow(0 0 5px rgba(247, 147, 26, 0.4)); }
+    .logo-svg { width: 24px; height: 24px; filter: drop-shadow(0 0 5px rgba(247, 147, 26, 0.4)); }
 
     /* 2. SIDEBAR */
     .sidebar { 
@@ -90,12 +90,13 @@
     .main-panel { grid-area: main; display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0; overflow: hidden; }
     
     .chart-toolbar {
-      flex: 0 0 36px; border-bottom: 1px solid var(--border); background: var(--panel);
+      flex: 0 0 48px; /* Increased Height for Spacing */
+      border-bottom: 1px solid var(--border); background: var(--panel);
       display: flex; align-items: center; padding: 0 16px; gap: 8px;
     }
     .tf-btn {
-      background: transparent; border: 1px solid #333; color: #666; font-size: 10px;
-      padding: 3px 10px; border-radius: 4px; cursor: pointer; font-family: var(--font);
+      background: transparent; border: 1px solid #333; color: #666; font-size: 11px;
+      padding: 5px 12px; border-radius: 4px; cursor: pointer; font-family: var(--font);
       font-weight: 600; transition: 0.2s; white-space: nowrap;
     }
     .tf-btn.active { background: #222; color: #fff; border-color: #fff; }
@@ -117,9 +118,10 @@
     /* 4. FEED */
     .feed-panel { grid-area: feed; background: #050505; border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
     .feed-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
-    .trade-row { display: flex; align-items: center; justify-content: space-between; height: 24px; padding: 0 12px; position: relative; font-family: var(--mono); font-size: 10px; color: var(--text-dim); border-bottom: 1px solid #0e0e0e; overflow: hidden; }
+    .trade-row { display: flex; align-items: center; justify-content: space-between; height: 28px; padding: 0 12px; position: relative; font-family: var(--mono); font-size: 11px; color: var(--text-dim); border-bottom: 1px solid #0e0e0e; overflow: hidden; }
     .vol-bar { position: absolute; top: 0; bottom: 0; right: 0; opacity: 0.15; z-index: 0; transition: width 0.2s; }
     .row-content { position: relative; z-index: 1; display: flex; width: 100%; justify-content: space-between; }
+    
     .up { color: var(--green); } .down { color: var(--red); }
 
     /* --- MOBILE OPTIMIZATIONS --- */
@@ -128,12 +130,18 @@
       .dashboard { display: flex; flex-direction: column; height: auto; overflow: visible; }
       
       /* Order Stack */
-      .appbar { order: 1; position: sticky; top: 0; border-bottom: none; /* FIX 1: Remove Line */ }
+      .appbar { order: 1; position: sticky; top: 0; border-bottom: none; }
       .main-panel { order: 2; height: auto; display: block; }
       .sidebar { order: 3; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
       .feed-panel { order: 4; height: 400px; border-left: none; }
 
       .metric-group { display: none; }
+      
+      /* Spacing Fix for Congestion */
+      .chart-toolbar { 
+        margin-top: 4px; /* Separation from Header */
+        overflow-x: auto; justify-content: flex-start; padding-left: 12px; 
+      }
       
       /* KPI Compact */
       .kpi-bar { height: auto; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
@@ -142,14 +150,9 @@
       
       /* Chart Compact */
       .chart-container { 
-        height: 260px; /* FIX 3: Reduced Height */
-        min-height: 260px;
-        padding-bottom: 0; /* Remove padding to pull watchlist up */
+        height: 260px; min-height: 260px;
+        padding-bottom: 0; 
       }
-      
-      /* Toolbar Scrollable */
-      .chart-toolbar { overflow-x: auto; justify-content: flex-start; padding-left: 12px; }
-      .tf-btn { padding: 6px 14px; font-size: 11px; } /* Larger touch target */
       
       /* Watchlist */
       .coin-list { max-height: none; height: auto; }
@@ -251,8 +254,6 @@
   };
   
   const STATE = { active: 'BTC', currency: 'USDT', rate: 1, mode: 'LIVE', showSMA: false, coins: {} };
-  
-  // DETECT MOBILE
   const isMobile = window.innerWidth < 900;
 
   const ctx = document.getElementById('chart').getContext('2d');
@@ -299,16 +300,15 @@
         x: { 
           display: true, grid: { display: false, borderColor: '#333' },
           ticks: { 
-            // FIX 2: System Font + Limit Ticks on Mobile
+            // CLEAN X-AXIS
             color: '#666', 
             font: { family: '-apple-system, sans-serif', size: 10 }, 
-            maxTicksLimit: isMobile ? 3 : 8, 
+            maxTicksLimit: isMobile ? 4 : 8, 
             maxRotation: 0, autoSkip: true, padding: 10 
           }
         },
         y: { 
           position: 'right', grid: { color: '#1a1a1a' }, 
-          // FIX 2: System Font
           ticks: { color: '#555', font: { family: '-apple-system, sans-serif', size: 10 }, callback: v => v.toLocaleString() } 
         }
       }
@@ -368,7 +368,12 @@
       const labels = [];
       data.forEach(k => {
         prices.push(parseFloat(k[4]));
-        labels.push(new Date(k[0]).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}));
+        const t = new Date(k[0]);
+        // Format Time Cleanly
+        const tStr = isMobile 
+            ? t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) 
+            : t.toLocaleTimeString('en-GB');
+        labels.push(tStr);
       });
       return { prices, labels };
     } catch(e) { return null; }
@@ -439,7 +444,6 @@
         const coin = STATE.coins[sym];
         data.forEach(k => {
           coin.liveHistory.push(parseFloat(k[4]));
-          // FIX 2: Short Time Format on Mobile
           const t = new Date(k[0]);
           const tStr = isMobile 
             ? t.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) 
@@ -541,6 +545,7 @@
   function addTrade(sym, price, qty, isMaker) {
     if(sym !== STATE.active) return;
     const val = price * qty;
+    const widthPct = Math.min((val / 50000) * 100, 100); 
     const sideClass = isMaker ? 'down' : 'up'; 
     const barColor = isMaker ? 'rgba(246,70,93,0.15)' : 'rgba(14,203,129,0.15)';
     
@@ -548,7 +553,7 @@
     row.className = 'trade-row';
     const bar = document.createElement('div');
     bar.className = 'vol-bar';
-    bar.style.width = Math.min((val / 50000) * 100, 100) + '%';
+    bar.style.width = widthPct + '%';
     bar.style.background = barColor;
     
     const content = document.createElement('div');
